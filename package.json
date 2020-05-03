@@ -1,0 +1,28 @@
+{
+  "name": "frontendlibrary",
+  "version": "1.0.0",
+  "description": "Frontend Library for Data Transformation and Visualization",
+  "main": "library.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tahoangluan/FrontendLibrary.git"
+  },
+  "keywords": [
+    "data",
+    "visualization"
+  ],
+  "author": "Hoang Luan Ta",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tahoangluan/FrontendLibrary/issues"
+  },
+  "homepage": "https://github.com/tahoangluan/FrontendLibrary#readme",
+  "dependencies": {
+    "d3": "5.16.0",
+    "jquery": "3.5.0",
+    "requirejs": "2.3.6"
+  }
+}
