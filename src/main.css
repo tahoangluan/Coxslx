@@ -1,0 +1,38 @@
+body{
+    font-family: Arial;
+}
+h1{
+    color: #0099FF;
+}
+p{
+    color: #000000;
+}
+tr{
+    background-color: #FFF;
+
+}
+th {
+    background: #333;
+    color: white;
+    font-weight: bold;
+    cursor: s-resize;
+    background-repeat: no-repeat;
+    background-position: 3% center;
+}
+td, th {
+    padding: 6px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+}
+th.des:after {
+    content: "\21E9";
+}
+
+th.aes:after {
+    content: "\21E7";
+}
