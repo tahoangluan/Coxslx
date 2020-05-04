@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tahoangluan/FrontendLibrary.git"
@@ -23,6 +24,7 @@
   "dependencies": {
     "d3": "5.16.0",
     "jquery": "3.5.0",
-    "requirejs": "2.3.6"
+    "requirejs": "2.3.6",
+    "xlsx": "0.16.0"
   }
 }

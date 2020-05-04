@@ -9,6 +9,19 @@ p{
 }
 tr{
     background-color: #FFF;
+}
+
+
+.showSheet > table > tr:first-child {
+    font-weight:bold
+
+}
+.showSheet > table > tbody > tr > td:first-child {
+    font-weight:bold
+
+}
+tr:first-child {
+    font-weight:bold
 
 }
 th {
@@ -21,7 +34,7 @@ th {
 }
 td, th {
     padding: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid #747474;
     text-align: left;
 }
 
