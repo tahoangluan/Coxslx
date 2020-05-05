@@ -1,35 +1,54 @@
-
-
-
+function render(file,divId) {
+    if (file.endsWith(".csv")) {
+        console.log("Yeah CSV")
+        csvFromFileToTable(file,divId)
+    }
+    else if (file.endsWith(".ods")||file.endsWith(".xlsx")||file.endsWith(".xls")){
+        xlxsReadFile(file,divId)
+    }
+    else {
+        console.log("Not Support")
+    }
+}
 function xlxsReadFile(file,id) {
     var url = file;
-    var oReq = new XMLHttpRequest();
-    oReq.open("GET", url, true);
-    oReq.responseType = "arraybuffer";
-    oReq.onload = function(e) {
-        var data1 = new Uint8Array( oReq.response)
-        var workbookArray = XLSX.read(data1, {type:"array"});
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
+    request.onload = function(e) {
+        var data1 = new Uint8Array( request.response)
 
-        //var arraybuffer = oReq.response;
+        var workbookArray = XLSX.read(data1, {type:"array"});
+        //var arraybuffer = request.response;
         //var data = new Uint8Array(arraybuffer);
         //var arr = new Array();
         //for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
         //var bstr = arr.join("");
         // var workbook = XLSX.read(bstr, {type:"binary"});
-
-        createAndModifyDivs(id,workbookArray.SheetNames)
-
         for (let i =0;i<workbookArray.SheetNames.length;i++){
+            var sheetname = workbookArray.SheetNames[i]
+            var worksheet = workbookArray.Sheets[sheetname];
+            if (JSON.stringify(worksheet) =='{}'){
+                workbookArray.SheetNames.slice(i,1)
+            }
+        }
+        var newSheetNames = workbookArray.SheetNames.filter(function (element) {
+            return JSON.stringify(workbookArray.Sheets[element]) !='{}'
+        })
+        createAndModifyDivs(id,newSheetNames)
+
+        for (let i =0;i<newSheetNames.length;i++){
             //var sheetname = workbookArray.SheetNames[i]
             //var worksheet = workbookArray.Sheets[sheetname];
             //var idWithVar = id+"_"+i
-            var defaultHtml = createNewHtmlToShowSheet(XLSX.write(workbookArray,{sheet:workbookArray.SheetNames[0],type:'string',bookType:'html'}))
+            //var defaultHtml = createNewHtmlToShowSheet(XLSX.write(workbookArray,{sheet:newSheetNames[0],type:'string',bookType:'html'}))
+            var defaultHtml = createNewHtmlToShowSheet(XLSX.utils.sheet_to_html(workbookArray.Sheets[workbookArray.SheetNames[0]]))
             $('#showSheet')[0].innerHTML =defaultHtml
-            document.getElementById("btn_"+workbookArray.SheetNames[i]).onclick = function () {
-                var html = XLSX.write(workbookArray,{sheet:workbookArray.SheetNames[i],type:'string',bookType:'html'})
+            document.getElementById("btn_"+newSheetNames[i]).onclick = function () {
+                //var html = XLSX.write(workbookArray,{sheet:newSheetNames[i],type:'string',bookType:'html'})
+                var html = XLSX.utils.sheet_to_html(workbookArray.Sheets[workbookArray.SheetNames[i]])
                 //var formatHtml = format(html)
                 var newHTML = createNewHtmlToShowSheet(html)
-
                 $('#showSheet')[0].innerHTML = newHTML
             }
 
@@ -45,7 +64,7 @@ function xlxsReadFile(file,id) {
         }
 
     }
-    oReq.send();
+    request.send();
 
 }
 function createNewHtmlToShowSheet(html) {
@@ -111,10 +130,9 @@ function createAndModifyDivs(mainDivId,workSheets) {
         myDivs.push(createDiv(workSheets[i],i));
         buttonDiv.appendChild(myDivs[i]);
     }
-    buttonDiv.style = "display: flex;flex-wrap: wrap;justify-content: center;"
+    buttonDiv.style = "display: flex;flex-wrap: wrap;justify-content: center;margin-top: 10px;"
     mainDiv.appendChild(buttonDiv)
 }
-
 
 function get_header_row(sheet) {
     var headers = [];
@@ -129,21 +147,21 @@ function get_header_row(sheet) {
     }
     return headers;
 }
-function csvFromFileToTable(file) {
+function csvFromFileToTable(file,divId) {
     d3.csv(file)
         .then(function(data) {
             var columns = data.columns
-            generateToTable(data,columns)
+            generateToTable(data,columns,divId)
         })
         .catch(function(error){
             // handle error
         })
 }
-function csvFromVariableToTable(input,separator) {
+function csvFromVariableToTable(input,separator,divId) {
     var output = csvJSON(input,separator)
     var headers = output.headers
     var data = output.result
-    generateToTable(data,headers)
+    generateToTable(data,headers,divId)
 }
 function csvJSON(input,separator){
     let lines=input.split("\n");
@@ -170,8 +188,10 @@ function csvTo2DGraph(file) {
 
         })
 }
-function generateToTable(input, headers) {
-    var table = d3.select("body").append("table"),
+function generateToTable(input, headers,divId) {
+    var div = document.getElementById(divId)
+    console.log(div)
+    var table = d3.select("#"+divId).append("table"),
         thead = table.append("thead"),
         tbody = table.append("tbody");
 
@@ -210,7 +230,6 @@ function generateToTable(input, headers) {
 
 function readFile(file) {
     let result;
-    console.log("File ",file)
     $(document).ready(function() {
         $.ajax({
             type: "GET",
