@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/tahoangluan/FrontendLibrary#readme",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "5.13.0",
     "d3": "5.16.0",
+    "font-awesome": "4.7.0",
     "jquery": "3.5.0",
     "requirejs": "2.3.6",
     "xlsx": "0.16.0"
