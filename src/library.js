@@ -70,6 +70,12 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             maxArr.push(max)
         }
 
+        let minArr = []
+        for (let i in subgroups) {
+            var min = d3.min(data, d => d[subgroups[i]]);
+            minArr.push(min)
+        }
+
         var groups = d3.map(data, function (d) {
             return (d[xAxis])
         }).keys()
@@ -83,7 +89,7 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             .call(d3.axisBottom(x).tickSize(0));
 
         var y = d3.scaleLinear()
-            .domain([0, Number(d3.max(maxArr)) + 100])
+            .domain([Number(d3.max(minArr)), Number(d3.max(maxArr)) + 100])
             .range([height, 0]);
         svg.append("g")
             .call(d3.axisLeft(y));
@@ -160,6 +166,134 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
+
+        let legend = svg.selectAll(".legend")
+            .data(subgroups.slice().reverse())
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function (d, i) {
+                return "translate(0," + i * 20 + ")";
+            });
+
+        legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(function (d) {
+                return d;
+            });
+    })
+}
+
+function csvToStackedBarChart(url, divId, headerToRemove, xAxis) {
+    var margin = {top: 10, right: 30, bottom: 20, left: 50},
+        width = d3.select('#' + divId).node().getBoundingClientRect().width,
+        height = 400 - margin.top - margin.bottom;
+
+    var svg = d3.select("#" + divId)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv(url).then(function (data) {
+
+        var columnsToDelete = []
+        for (let i in headerToRemove) {
+            columnsToDelete.push(data.columns[headerToRemove[i]])
+        }
+
+        var subgroups = diffBetweenTwoArrays(data.columns, columnsToDelete)
+
+        var stackedData = d3.stack()
+            .keys(subgroups)
+            (data)
+
+        var groups = d3.map(data, function (d) {
+            return (d[xAxis])
+        }).keys()
+
+        var x = d3.scaleBand()
+            .domain(groups)
+            .range([0, width])
+            .padding([0.2])
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x).tickSize(0));
+
+        let minArr = []
+        for (let i in subgroups) {
+            var min = d3.min(data, d => d[subgroups[i]]);
+            minArr.push(min)
+        }
+        var y = d3.scaleLinear()
+            .domain([0, d3.max(stackedData, d => d3.max(d, d => d[1]))])
+            .range([height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+
+        let colorArray = []
+
+        for (let i in subgroups) {
+            let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
+            colorArray.push(color)
+        }
+        var color = d3.scaleOrdinal().domain(subgroups).range(colorArray)
+
+        var tooltip = d3.select("#" + divId)
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("position", "absolute")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+
+        var mouseover = function (d) {
+            var subgroupName = d3.select(this.parentNode).datum().key;
+            var subgroupValue = d.data[subgroupName];
+            tooltip
+                .html("subgroup: " + subgroupName + "<br>" + "Value: " + subgroupValue)
+                .style("opacity", 1)
+        }
+
+        var mousemove = function (d) {
+            tooltip
+                .style("top", (d3.event.pageY + 10) + "px")
+                .style("left", (d3.event.pageX + 10) + "px");
+        }
+        var mouseleave = function (d) {
+            tooltip.style("opacity", 0)
+        }
+
+        svg.append("g")
+            .selectAll("g")
+            .data(stackedData)
+            .enter().append("g")
+            .attr("fill", function(d) { return color(d.key); })
+            .selectAll("rect")
+            .data(function(d) { return d; })
+            .enter().append("rect")
+            .attr("x", function(d) { return x(d.data[xAxis]); })
+            .attr("y", function(d) { return y(d[1]); })
+            .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+            .attr("width",x.bandwidth())
+            .attr("stroke", "grey")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
 
         let legend = svg.selectAll(".legend")
             .data(subgroups.slice().reverse())
