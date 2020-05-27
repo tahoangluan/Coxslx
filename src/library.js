@@ -73,6 +73,31 @@ function histogram(url,divId,headerToRemove,xAxis) {
             .domain(subgroups)
             .range(['#e41a1c','#377eb8','#4daf4a'])
 
+        var tooltip = d3.select("#"+divId)
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("position", "absolute")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+
+        var mouseover = function(d) {
+            tooltip
+                .html("subgroup: " + d.key + "<br>" + "Value: " + d.value)
+                .style("opacity", 1)}
+
+        var mousemove = function(d) {
+            tooltip
+                .style("top", (d3.event.pageY + 10) + "px")
+                .style("left", (d3.event.pageX + 10) + "px");
+        }
+        var mouseleave = function(d) {
+            tooltip.style("opacity", 0)
+        }
+
         svg.append("g")
             .selectAll("g")
             .data(data)
@@ -86,7 +111,10 @@ function histogram(url,divId,headerToRemove,xAxis) {
             .attr("y", function(d) { return y(d.value); })
             .attr("width", xSubgroup.bandwidth())
             .attr("height", function(d) { return height - y(d.value); })
-            .attr("fill", function(d) { return color(d.key); });
+            .attr("fill", function(d) { return color(d.key); })
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave);
 
     })
 }
