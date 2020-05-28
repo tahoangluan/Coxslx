@@ -75,3 +75,24 @@ th.des:after {
 th.aes:after {
     content: "\21E7";
 }
+.legend-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex: 0 1 auto;
+    align-self: center;
+    margin: 0 auto;
+}
+.legend{
+    margin-right: 10px;
+    display: flex;
+}
+.legend-color {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 5px;
+}

@@ -87,14 +87,15 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             .range([0, width])
             .padding([0.2])
 
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x).tickSize(0));
+
 
         var y = d3.scaleLinear()
             .domain([Number(d3.min(minArr)), Number(d3.max(maxArr)) + 100])
             .range([height, 0]);
 
+        svg.append("g")
+            .attr("transform", "translate(0," + y(0) + ")")
+            .call(d3.axisBottom(x).tickSize(0));
         svg.append("g")
             .attr("class", "y axis")
             .call(d3.axisLeft(y).tickSize(0));
@@ -128,7 +129,7 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
 
         var mouseover = function (d) {
             tooltip
-                .html("subgroup: " + d.key + "<br>" + "Value: " + d.value)
+                .html("Name: " + d.key + "<br>" + "Value: " + d.value)
                 .style("opacity", 1)
         }
 
@@ -164,7 +165,6 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             })
             .attr("width", xSubgroup.bandwidth())
             .attr("height", function (d) {
-                console.log(y(0))
                 return Math.abs(y(d.value) - y(0));
             })
             .attr("fill", function (d) {
@@ -174,28 +174,22 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
 
-        let legend = svg.selectAll(".legend")
-            .data(subgroups.slice().reverse())
-            .enter().append("g")
+        var legendContainer = d3.select('#'+divId).append('div')
+            .attr('class', 'legend-container')
+        let legend = legendContainer.selectAll(".legend")
+            .data(color.domain())
+            .enter().append("g").append("div")
             .attr("class", "legend")
-            .attr("transform", function (d, i) {
-                return "translate(0," + i * 20 + ")";
-            });
 
-        legend.append("rect")
-            .attr("x", width - 18)
-            .attr("width", 18)
-            .attr("height", 18)
-            .style("fill", color);
 
-        legend.append("text")
-            .attr("x", width - 24)
-            .attr("y", 9)
-            .attr("dy", ".35em")
-            .style("text-anchor", "end")
-            .text(function (d) {
+        legend.append("span")
+            .attr("class", "legend-color")
+            .style("background-color", color);
+
+        legend.append("span")
+            .text(function(d) {
                 return d;
-            });
+            })
     })
 }
 
@@ -276,7 +270,7 @@ function csvToStackedBarChart(url, divId, headerToRemove, xAxis) {
             var subgroupName = d3.select(this.parentNode).datum().key;
             var subgroupValue = d.data[subgroupName];
             tooltip
-                .html("subgroup: " + subgroupName + "<br>" + "Value: " + subgroupValue)
+                .html("Name: " + subgroupName + "<br>" + "Value: " + subgroupValue)
                 .style("opacity", 1)
         }
 
@@ -306,28 +300,22 @@ function csvToStackedBarChart(url, divId, headerToRemove, xAxis) {
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
 
-        let legend = svg.selectAll(".legend")
-            .data(subgroups.slice().reverse())
-            .enter().append("g")
+        var legendContainer = d3.select('#'+divId).append('div')
+            .attr('class', 'legend-container')
+        let legend = legendContainer.selectAll(".legend")
+            .data(color.domain())
+            .enter().append("g").append("div")
             .attr("class", "legend")
-            .attr("transform", function (d, i) {
-                return "translate(0," + i * 20 + ")";
-            });
 
-        legend.append("rect")
-            .attr("x", width - 18)
-            .attr("width", 18)
-            .attr("height", 18)
-            .style("fill", color);
 
-        legend.append("text")
-            .attr("x", width - 24)
-            .attr("y", 9)
-            .attr("dy", ".35em")
-            .style("text-anchor", "end")
-            .text(function (d) {
+        legend.append("span")
+            .attr("class", "legend-color")
+            .style("background-color", color);
+
+        legend.append("span")
+            .text(function(d) {
                 return d;
-            });
+            })
     })
 }
 
