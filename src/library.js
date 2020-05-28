@@ -46,7 +46,9 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
     var margin = {top: 10, right: 30, bottom: 20, left: 50},
         width = d3.select('#' + divId).node().getBoundingClientRect().width,
         height = 400 - margin.top - margin.bottom;
-
+    var center = d3.scaleLinear()
+        .range([0, width]);
+    var centerLine = d3.axisTop(center).ticks(0);
     var svg = d3.select("#" + divId)
         .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -73,7 +75,7 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
         let minArr = []
         for (let i in subgroups) {
             var min = d3.min(data, d => d[subgroups[i]]);
-            minArr.push(min)
+            minArr.push(Number(min))
         }
 
         var groups = d3.map(data, function (d) {
@@ -84,15 +86,22 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
             .domain(groups)
             .range([0, width])
             .padding([0.2])
+
         svg.append("g")
             .attr("transform", "translate(0," + height + ")")
             .call(d3.axisBottom(x).tickSize(0));
 
         var y = d3.scaleLinear()
-            .domain([Number(d3.max(minArr)), Number(d3.max(maxArr)) + 100])
+            .domain([Number(d3.min(minArr)), Number(d3.max(maxArr)) + 100])
             .range([height, 0]);
+
         svg.append("g")
-            .call(d3.axisLeft(y));
+            .attr("class", "y axis")
+            .call(d3.axisLeft(y).tickSize(0));
+        svg.append("g")
+            .attr("class", "centerline")
+            .attr("transform", "translate(0," + y(0) + ")")
+            .call(centerLine);
 
         var xSubgroup = d3.scaleBand()
             .domain(subgroups)
@@ -131,9 +140,6 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
         var mouseleave = function (d) {
             tooltip.style("opacity", 0)
         }
-        var stackedData = d3.stack()
-            .keys(subgroups)
-            (data)
 
         svg.append("g")
             .selectAll("g")
@@ -154,11 +160,12 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
                 return xSubgroup(d.key);
             })
             .attr("y", function (d) {
-                return y(d.value);
+                return y(Math.max(0, d.value));
             })
             .attr("width", xSubgroup.bandwidth())
             .attr("height", function (d) {
-                return height - y(d.value);
+                console.log(y(0))
+                return Math.abs(y(d.value) - y(0));
             })
             .attr("fill", function (d) {
                 return color(d.key);
@@ -192,6 +199,7 @@ function csvToBarChart(url, divId, headerToRemove, xAxis) {
     })
 }
 
+
 function csvToStackedBarChart(url, divId, headerToRemove, xAxis) {
     var margin = {top: 10, right: 30, bottom: 20, left: 50},
         width = d3.select('#' + divId).node().getBoundingClientRect().width,
@@ -215,7 +223,7 @@ function csvToStackedBarChart(url, divId, headerToRemove, xAxis) {
         var subgroups = diffBetweenTwoArrays(data.columns, columnsToDelete)
 
         var stackedData = d3.stack()
-            .keys(subgroups)
+            .keys(subgroups).offset(d3.stackOffsetDiverging)
             (data)
 
         var groups = d3.map(data, function (d) {
@@ -226,20 +234,23 @@ function csvToStackedBarChart(url, divId, headerToRemove, xAxis) {
             .domain(groups)
             .range([0, width])
             .padding([0.2])
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x).tickSize(0));
 
         let minArr = []
         for (let i in subgroups) {
             var min = d3.min(data, d => d[subgroups[i]]);
-            minArr.push(min)
+            minArr.push(Number(min))
         }
+
         var y = d3.scaleLinear()
-            .domain([0, d3.max(stackedData, d => d3.max(d, d => d[1]))])
+            .domain([Number(d3.min(minArr)), d3.max(stackedData, d => d3.max(d, d => d[1]))])
             .range([height, 0]);
+
         svg.append("g")
-            .call(d3.axisLeft(y));
+            .attr("transform", "translate(0," + y(0) + ")")
+            .call(d3.axisBottom(x).tickSize(0));
+
+        svg.append("g")
+            .call(d3.axisLeft(y).tickSize(0));
 
 
         let colorArray = []
