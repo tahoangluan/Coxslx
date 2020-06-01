@@ -78,15 +78,23 @@ th.aes:after {
 .legend-container {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
     flex: 0 1 auto;
     align-self: center;
-    margin: 0 auto;
+    margin-left: 70px;
 }
 .legend{
     margin-right: 10px;
     display: flex;
+}
+.barChartRadio{
+    margin-right: 10px;
+}
+.barChartRadioForm{
+    display: flex;
+    justify-content: center;
+    align-items: center
 }
 .legend-color {
     width: 20px;
@@ -96,3 +104,60 @@ th.aes:after {
     vertical-align: middle;
     margin-right: 5px;
 }
+.fade.in {
+    opacity: 1;
+}
+.modal.in .modal-dialog {
+    -webkit-transform: translate(0, 0);
+    -o-transform: translate(0, 0);
+    transform: translate(0, 0);
+}
+
+.modal-backdrop .fade .in {
+    opacity: 0.5 !important;
+}
+
+
+.modal-backdrop.fade {
+    opacity: 0.5 !important;
+}
+.fieldsetBorder{
+    border:1px solid #e5e5e5;
+}
+.legendStyle{
+    display: block;
+    font-size: 13px;
+    color: #5a5858;
+    margin-left: 20px;
+    width: 35px;
+    border: 0;
+    margin-bottom: 0px;
+}
+.xAxisDiv{
+    margin: 10px;
+}
+.vl {
+    border-left: 1px solid green;
+    margin :0px 20px 5px 20px;
+    box-shadow:0px 1px 1px #de1dde;
+}
+.fieldsetYAxis{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+.gridGraphBtnDiv{
+    display: flex;
+    margin: 10px 10px 10px 30px;
+}
+#divToVis{
+    margin: 20px;
+}
+.dropdown-menu li a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+.dropdown-menu li a:hover {background-color: #f1f1f1}
+
