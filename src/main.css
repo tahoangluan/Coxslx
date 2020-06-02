@@ -77,7 +77,7 @@ th.aes:after {
 }
 .legend-container {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: left;
     align-items: center;
     flex: 0 1 auto;
@@ -87,6 +87,7 @@ th.aes:after {
 .legend{
     margin-right: 10px;
     display: flex;
+    align-items: center;
 }
 .barChartRadio{
     margin-right: 10px;
@@ -158,6 +159,10 @@ th.aes:after {
     padding: 12px 16px;
     text-decoration: none;
     display: block;
+}
+.alert{
+    margin:20px;
+    width: 450px;
 }
 .dropdown-menu li a:hover {background-color: #f1f1f1}
 
