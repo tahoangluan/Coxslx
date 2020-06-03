@@ -95,7 +95,7 @@ function wrap(text, width) {
             }
         }
     }) }
-function visualize(data, divId, headerToVis, xAxis, barC) {
+function createBarchart(data, divId, headerToVis, xAxis, barC) {
     var margin = {top: 10, right: 30, bottom: 20, left: 50},
         width = 1000 - margin.top - margin.bottom;
         height = 400 - margin.top - margin.bottom;
@@ -299,7 +299,7 @@ function visualize(data, divId, headerToVis, xAxis, barC) {
 
 
 function update(nbins, divId, headerToVis, xAxis, barC, input) {
-    visualize(nbins, divId, headerToVis, xAxis, barC)
+    createBarchart(nbins, divId, headerToVis, xAxis, barC)
     d3.select("#nbins").on("input", function () {
         let d = input
         d = d.slice(0, +this.value)
@@ -307,7 +307,7 @@ function update(nbins, divId, headerToVis, xAxis, barC, input) {
         let graph = document.getElementById("graphVisualization")
         if (grid == null && graph != null) {
             $("#" + divId).contents(':not(form)').remove();
-            visualize(d, divId, headerToVis, xAxis, barC)
+            createBarchart(d, divId, headerToVis, xAxis, barC)
             changeBarStacked(d, divId, headerToVis, xAxis)
 
         }
@@ -354,7 +354,7 @@ function xlxsReadFile(file, id, grid, buttonDiv) {
         var defaultworksheet = workbookArray.Sheets[defaultSheetname];
 
         var defaultSheet = XLSX.utils.sheet_to_json(defaultworksheet, {raw: true, defval: ""})
-        generateToTable(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", grid, buttonDiv)
+        visualization(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", grid, buttonDiv)
         for (let i = 0; i < newSheetNames.length; i++) {
             document.getElementById("btn_" + newSheetNames[i]).onclick = function () {
                 var newsheetname = workbookArray.SheetNames[i]
@@ -362,53 +362,14 @@ function xlxsReadFile(file, id, grid, buttonDiv) {
 
                 var newarray = XLSX.utils.sheet_to_json(newworksheet, {raw: true, defval: ""})
                 $("#showSheet").empty();
-                generateToTable(newarray, Object.keys(newarray[0]), "showSheet", grid, buttonDiv)
-                //var html = XLSX.write(workbookArray,{sheet:newSheetNames[i],type:'string',bookType:'html'})
-                //var html = XLSX.utils.sheet_to_html(workbookArray.Sheets[workbookArray.SheetNames[i]])
-                //var formatHtml = format(html)
-                //var newHTML = createNewHtmlToShowSheet(html)
-                //$('#showSheet')[0].innerHTML = newHTML
+                visualization(newarray, Object.keys(newarray[0]), "showSheet", grid, buttonDiv)
             }
 
-            //console.log("sheetname ",workbook.SheetNames[1])
-            //var worksheet = workbook.Sheets[sheetname];
-            //console.log("worksheet ",workbook.Sheets[workbook.SheetNames[1]])
-            //var headers = get_header_row(worksheet)
-            //console.log("headers ",headers)
-            //var json_object = XLSX.utils.sheet_to_json(worksheet,{raw:true})
-            //console.log(json_object);
-
-            //generateToTable(json_object,headers)
         }
 
     }
     request.send();
 
-}
-
-function createNewHtmlToShowSheet(html) {
-    var doc = new DOMParser().parseFromString(html, "text/xml");
-    var childNodes = doc.childNodes[0].childNodes[1].childNodes[0].childNodes
-    var arrayFromChildNodes = Array.from(childNodes)
-    //var afterFiltered = arrayFromChildNodes.filter(function(item) {return item.childNodes.length > 0;});
-    var childNodeAfterRemovedEmptyString = arrayFromChildNodes.filter(function (item) {
-        var a = Array.from(item.childNodes).filter(function (item1) {
-            return item1.textContent.trim() !== ""
-        })
-        return a.length > 0
-    })
-
-    var newTable = document.createElement('table');
-    for (let node of childNodeAfterRemovedEmptyString) {
-        newTable.appendChild(node)
-    }
-    var newHTML = document.createElement('html');
-    var head = document.createElement('head');
-    var body = document.createElement('body');
-    body.appendChild(newTable)
-    newHTML.appendChild(head)
-    newHTML.appendChild(body)
-    return newHTML.innerHTML
 }
 
 function createDiv(sheetname, i) {
@@ -441,7 +402,7 @@ function csvFromFileToTable(file, divId,grid, buttonDiv) {
     d3.csv(file)
         .then(function (data) {
             var columns = data.columns
-            generateToTable(data, columns, divId,grid, buttonDiv)
+            visualization(data, columns, divId,grid, buttonDiv)
         })
         .catch(function (error) {
             // handle error
@@ -452,7 +413,7 @@ function csvFromVariableToTable(input, separator, divId) {
     var output = csvJSON(input, separator)
     var headers = output.headers
     var data = output.result
-    generateToTable(data, headers, divId)
+    visualization(data, headers, divId)
 }
 
 function csvJSON(input, separator) {
@@ -638,7 +599,7 @@ function gridVisualization(input, headers, divId) {
     return table;
 }
 
-function generateToTable(input, headers, divId, grid, buttonDiv) {
+function visualization(input, headers, divId, grid, buttonDiv) {
 
     //create BarChartModal
     if (document.getElementById("nbinsForm")!=null){
