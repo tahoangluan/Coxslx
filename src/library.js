@@ -24,19 +24,19 @@ function render(file, divId) {
             return d;
         })
     if (file.endsWith(".csv")) {
-        csvFromFileToTable(file, divId , grid, buttonDiv)
+        csvFromFileToTable(file, divId, grid, buttonDiv)
     } else if (file.endsWith(".ods") || file.endsWith(".xlsx") || file.endsWith(".xls")) {
         xlxsReadFile(file, divId, grid, buttonDiv)
     } else {
         console.log("Not Support")
-        errorHTML(divId,"File type not supported!",
+        errorHTML(divId, "File type not supported!",
             "You are trying to render a file type that is not supported. " +
-            "Please make sure your file is created in xlx, xlsx, ods or csv." )
+            "Please make sure your file is created in xlx, xlsx, ods or csv.")
 
     }
 }
 
-function errorHTML(divId,headerErrorText,text2) {
+function errorHTML(divId, headerErrorText, text2) {
     var error = d3.select("#" + divId).append("div")
         .attr("class", "js-temp-notice alert alert-warning alert-block")
     error.append("h3").attr("class", "alert-heading").text(headerErrorText)
@@ -73,8 +73,9 @@ function barChart(nbins, divId, headerToVis, xAxis, input) {
     changeBarStacked(nbins, divId, headerToVis, xAxis, input)
 
 }
+
 function wrap(text, width) {
-    text.each(function() {
+    text.each(function () {
         var text = d3.select(this),
             words = text.text().split(/\s+/).reverse(),
             word,
@@ -94,209 +95,8 @@ function wrap(text, width) {
                 tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", `${++lineNumber * lineHeight + dy}em`).text(word)
             }
         }
-    }) }
-function createBarchart(data, divId, headerToVis, xAxis, barC) {
-    var margin = {top: 10, right: 30, bottom: 20, left: 50},
-        width = 1000 - margin.top - margin.bottom;
-        height = 400 - margin.top - margin.bottom;
-
-    var svg = d3.select("#" + divId)
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-
-    var subgroups = headerToVis
-    let colorArray = []
-    for (let i in subgroups) {
-        let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
-        colorArray.push(color)
-    }
-    var color = d3.scaleOrdinal().domain(subgroups).range(colorArray)
-
-    var tooltip = d3.select("#" + divId)
-        .append("div")
-        .style("opacity", 0)
-        .attr("class", "tooltip")
-        .style("position", "absolute")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-
-    var mousemove = function (d) {
-        tooltip
-            .style("top", (d3.event.pageY + 10) + "px")
-            .style("left", (d3.event.pageX + 10) + "px");
-    }
-    var mouseleave = function (d) {
-        tooltip.style("opacity", 0)
-    }
-
-    let minArr = []
-    for (let i in subgroups) {
-        var min = d3.min(data, d => d[subgroups[i]]);
-        minArr.push(Number(min))
-    }
-    let minY ;
-    if (Number(d3.min(minArr))<0){
-        minY = Number(d3.min(minArr))
-    }
-    else {
-        minY =0
-    }
-    var groups = d3.map(data, function (d) {
-        return (d[xAxis])
-    }).keys()
-
-
-    var x = d3.scaleBand()
-        .domain(groups)
-        .rangeRound([0,width], .1, .3)
-        .paddingOuter(0.1)
-        .paddingInner(0.5)
-
-    if (barC == "stacked") {
-        var stackedData = d3.stack()
-            .keys(subgroups).offset(d3.stackOffsetDiverging)
-            (data)
-        var mouseover = function (d) {
-            var subgroupName = d3.select(this.parentNode).datum().key;
-            var subgroupValue = d.data[subgroupName];
-            tooltip
-                .html("Name: " + subgroupName + "<br>" + "Value: " + subgroupValue)
-                .style("opacity", 1)
-        }
-        var y = d3.scaleLinear()
-            .domain([minY, d3.max(stackedData, d => d3.max(d, d => d[1]))])
-            .range([height-30, 0]);
-
-        svg.append("g")
-            .attr("transform", "translate(0," + y(0) + ")")
-            .call(d3.axisBottom(x).tickSize(0)).selectAll(".tick text")
-            .call(wrap, x.bandwidth());
-
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(d3.axisLeft(y).tickSize(0));
-
-        svg.append("g")
-            .selectAll("g")
-            .data(stackedData)
-            .enter().append("g")
-            .merge(svg)
-            .attr("fill", function (d) {
-                return color(d.key);
-            })
-            .selectAll("rect")
-            .data(function (d) {
-                return d;
-            })
-            .enter().append("rect")
-            .attr("x", function (d) {
-                return x(d.data[xAxis]);
-            })
-            .attr("y", function (d) {
-                return y(d[1]);
-            })
-            .attr("height", function (d) {
-                return y(d[0]) - y(d[1]);
-            })
-            .attr("width", x.bandwidth())
-            .attr("stroke", "grey")
-            .on("mouseover", mouseover)
-            .on("mousemove", mousemove)
-            .on("mouseleave", mouseleave)
-        svg
-            .exit().remove();
-    }
-    if (barC == "grouped") {
-        let maxArr = []
-        for (let i in subgroups) {
-            var max = d3.max(data, d => d[subgroups[i]]);
-            maxArr.push(max)
-        }
-        var y = d3.scaleLinear()
-            .domain([minY, Number(d3.max(maxArr)) + 100])
-            .range([height-30, 0]);
-
-        var xSubgroup = d3.scaleBand()
-            .domain(subgroups)
-            .range([0, x.bandwidth()])
-            .padding([0.3])
-        var mouseover = function (d) {
-            tooltip
-                .html("Name: " + d.key + "<br>" + "Value: " + d.value)
-                .style("opacity", 1)
-        }
-        svg.append("g")
-            .attr("transform", "translate(0," + y(0) + ")")
-            .call(d3.axisBottom(x).tickSize(0)).selectAll(".tick text")
-            .call(wrap, x.bandwidth())
-
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(d3.axisLeft(y).tickSize(0));
-        svg.append("g")
-            .selectAll("g")
-            .data(data)
-            .enter()
-            .append("g")
-            .attr("transform", function (d) {
-                return "translate(" + x(d[xAxis]) + ",0)";
-            })
-            .selectAll("rect")
-            .data(function (d) {
-                return subgroups.map(function (key) {
-                    return {key: key, value: d[key]};
-                });
-            })
-            .enter().append("rect")
-            .attr("x", function (d) {
-                return xSubgroup(d.key);
-            })
-            .attr("y", function (d) {
-                return y(Math.max(0, d.value));
-            })
-            .attr("width", xSubgroup.bandwidth())
-            .attr("height", function (d) {
-                return Math.abs(y(d.value) - y(0));
-            })
-
-            .attr("fill", function (d) {
-                return color(d.key);
-            })
-            .on("mouseover", mouseover)
-            .on("mousemove", mousemove)
-            .on("mouseleave", mouseleave);
-        svg
-            .exit().remove();
-    }
-
-    var legendContainer = d3.select('#' + divId).append('div')
-        .attr('class', 'legend-container')
-        .attr("style", "max-width:" + width + "px")
-    let legend = legendContainer.selectAll(".legend")
-        .data(color.domain())
-        .enter().append("g").append("div")
-        .attr("class", "legend")
-        .attr("order", function (d, i) {
-            return i
-        })
-
-    legend.append("span")
-        .attr("class", "legend-color")
-        .style("background-color", color);
-
-    legend.append("span")
-        .text(function (d) {
-            return d;
-        })
+    })
 }
-
 
 function update(nbins, divId, headerToVis, xAxis, barC, input) {
     createBarchart(nbins, divId, headerToVis, xAxis, barC)
@@ -398,11 +198,11 @@ function createAndModifyDivs(mainDivId, workSheets) {
     mainDiv.appendChild(buttonDiv)
 }
 
-function csvFromFileToTable(file, divId,grid, buttonDiv) {
+function csvFromFileToTable(file, divId, grid, buttonDiv) {
     d3.csv(file)
         .then(function (data) {
             var columns = data.columns
-            visualization(data, columns, divId,grid, buttonDiv)
+            visualization(data, columns, divId, grid, buttonDiv)
         })
         .catch(function (error) {
             // handle error
@@ -524,7 +324,7 @@ function barChartModal(input, headers) {
 function gridVisualization(input, headers, divId) {
     var table = d3.select("#" + divId)
             .append("div").attr("id", "gridVisualization")
-            .append("table").attr("id","tblVis"),
+            .append("table").attr("id", "tblVis"),
         thead = table.append("thead"),
         tbody = table.append("tbody"),
         tfoot = table.append("tfoot");
@@ -602,29 +402,29 @@ function gridVisualization(input, headers, divId) {
 function visualization(input, headers, divId, grid, buttonDiv) {
 
     //create BarChartModal
-    if (document.getElementById("nbinsForm")!=null){
+    if (document.getElementById("nbinsForm") != null) {
         $("#BarChartModal").remove();
     }
     barChartModal(input, headers)
-    if ($("#nbinsForm").length !== 0){
+    if ($("#nbinsForm").length !== 0) {
         document.getElementById("nbinsForm").remove();
     }
 
     var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
     nbinsDiv.append("label").text("nbins").append("input").attr("id", "nbins").attr("class", "barChartRadio")
         .attr("type", "number").attr("min", "1").attr("id", "nbins").attr("max", input.length)
-        .attr("value", Math.round(input.length/2))
+        .attr("value", Math.round(input.length / 2))
 
     grid.on("click", gridClick)
 
     function gridClick() {
-        document.getElementById("divToVis").innerHTML =""
+        document.getElementById("divToVis").innerHTML = ""
         gridVisualization(input.slice(0, document.getElementById("nbins").value), headers, "divToVis")
     }
 
     d3.select("#" + divId).append("div").attr("id", "divToVis")
 
-    gridVisualization(input.slice(0, Math.round(input.length/2)), headers, "divToVis")
+    gridVisualization(input.slice(0, Math.round(input.length / 2)), headers, "divToVis")
     graphVisualization(input.slice(0, document.getElementById("nbins").value), input)
     setInputFilter(document.getElementById("nbins"), function (value) {
         return /^[1-9]\d*$/.test(value) && (value === "" || parseInt(value) <= input.length);
@@ -644,6 +444,418 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     $("#nbins").on("change keyup paste", function () {
 
     })
+}
+
+function createBarchart(data, divId, headerToVis, xAxis, barC) {
+    var margin = {top: 10, right: 30, bottom: 20, left: 50},
+        width = 1000 - margin.top - margin.bottom;
+    height = 400 - margin.top - margin.bottom;
+
+    var svg = d3.select("#" + divId)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    var subgroups = headerToVis
+    let colorArray = []
+    for (let i in subgroups) {
+        let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
+        colorArray.push(color)
+    }
+    var color = d3.scaleOrdinal().domain(subgroups).range(colorArray)
+
+    var tooltip = d3.select("#" + divId)
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px")
+
+    var mousemove = function (d) {
+        tooltip
+            .style("top", (d3.event.pageY + 10) + "px")
+            .style("left", (d3.event.pageX + 10) + "px");
+    }
+    var mouseleave = function (d) {
+        tooltip.style("opacity", 0)
+    }
+
+    let minArr = []
+    for (let i in subgroups) {
+        var min = d3.min(data, d => d[subgroups[i]]);
+        minArr.push(Number(min))
+    }
+    let minY;
+    if (Number(d3.min(minArr)) < 0) {
+        minY = Number(d3.min(minArr))
+    } else {
+        minY = 0
+    }
+    var groups = d3.map(data, function (d) {
+        return (d[xAxis])
+    }).keys()
+
+
+    var x = d3.scaleBand()
+        .domain(groups)
+        .rangeRound([0, width], .1, .3)
+        .paddingOuter(0.1)
+        .paddingInner(0.5)
+
+    if (barC == "stacked") {
+        var stackedData = d3.stack()
+            .keys(subgroups).offset(d3.stackOffsetDiverging)
+            (data)
+        var mouseover = function (d) {
+            var subgroupName = d3.select(this.parentNode).datum().key;
+            var subgroupValue = d.data[subgroupName];
+            tooltip
+                .html("Name: " + subgroupName + "<br>" + "Value: " + subgroupValue)
+                .style("opacity", 1)
+        }
+        var y = d3.scaleLinear()
+            .domain([minY, d3.max(stackedData, d => d3.max(d, d => d[1]))])
+            .range([height - 30, 0]);
+
+        svg.append("g")
+            .attr("transform", "translate(0," + y(0) + ")")
+            .call(d3.axisBottom(x).tickSize(0)).selectAll(".tick text")
+            .call(wrap, x.bandwidth());
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(y).tickSize(0));
+
+        svg.append("g")
+            .selectAll("g")
+            .data(stackedData)
+            .enter().append("g")
+            .merge(svg)
+            .attr("fill", function (d) {
+                return color(d.key);
+            })
+            .selectAll("rect")
+            .data(function (d) {
+                return d;
+            })
+            .enter().append("rect")
+            .attr("x", function (d) {
+                return x(d.data[xAxis]);
+            })
+            .attr("y", function (d) {
+                return y(d[1]);
+            })
+            .attr("height", function (d) {
+                return y(d[0]) - y(d[1]);
+            })
+            .attr("width", x.bandwidth())
+            .attr("stroke", "grey")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
+        svg
+            .exit().remove();
+    }
+    if (barC == "grouped") {
+        let maxArr = []
+        for (let i in subgroups) {
+            var max = d3.max(data, d => d[subgroups[i]]);
+            maxArr.push(max)
+        }
+        var y = d3.scaleLinear()
+            .domain([minY, Number(d3.max(maxArr)) + 100])
+            .range([height - 30, 0]);
+
+        var xSubgroup = d3.scaleBand()
+            .domain(subgroups)
+            .range([0, x.bandwidth()])
+            .padding([0.3])
+        var mouseover = function (d) {
+            tooltip
+                .html("Name: " + d.key + "<br>" + "Value: " + d.value)
+                .style("opacity", 1)
+        }
+        svg.append("g")
+            .attr("transform", "translate(0," + y(0) + ")")
+            .call(d3.axisBottom(x).tickSize(0)).selectAll(".tick text")
+            .call(wrap, x.bandwidth())
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(y).tickSize(0));
+        svg.append("g")
+            .selectAll("g")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr("transform", function (d) {
+                return "translate(" + x(d[xAxis]) + ",0)";
+            })
+            .selectAll("rect")
+            .data(function (d) {
+                return subgroups.map(function (key) {
+                    return {key: key, value: d[key]};
+                });
+            })
+            .enter().append("rect")
+            .attr("x", function (d) {
+                return xSubgroup(d.key);
+            })
+            .attr("y", function (d) {
+                return y(Math.max(0, d.value));
+            })
+            .attr("width", xSubgroup.bandwidth())
+            .attr("height", function (d) {
+                return Math.abs(y(d.value) - y(0));
+            })
+
+            .attr("fill", function (d) {
+                return color(d.key);
+            })
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave);
+        svg
+            .exit().remove();
+    }
+
+    var legendContainer = d3.select('#' + divId).append('div')
+        .attr('class', 'legend-container')
+        .attr("style", "max-width:" + width + "px")
+    let legend = legendContainer.selectAll(".legend")
+        .data(color.domain())
+        .enter().append("g").append("div")
+        .attr("class", "legend")
+        .attr("order", function (d, i) {
+            return i
+        })
+
+    legend.append("span")
+        .attr("class", "legend-color")
+        .style("background-color", color);
+
+    legend.append("span")
+        .text(function (d) {
+            return d;
+        })
+}
+
+function arr_diff (a1, a2) {
+
+    var a = [], diff = [];
+
+    for (var i = 0; i < a1.length; i++) {
+        a[a1[i]] = true;
+    }
+
+    for (var i = 0; i < a2.length; i++) {
+        if (a[a2[i]]) {
+            delete a[a2[i]];
+        } else {
+            a[a2[i]] = true;
+        }
+    }
+
+    for (var k in a) {
+        diff.push(k);
+    }
+
+    return diff;
+}
+
+function lineChart(url, divId, xAxis) {
+
+    var margin = {top: 10, right: 100, bottom: 30, left: 30},
+        width = 1400 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+    var svg = d3.select("#" + divId)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    //Read the data
+    d3.csv(url)
+        .then(function (data) {
+
+            // List of groups (here I have one group per column)
+            var allGroup = data.columns
+
+            let newData = allGroup.map(function (d) {
+
+               for (let i =0;i<data.length;i++){
+                   if (!isNaN(data[i][d])){
+                    return d
+                   }
+               }
+
+            })
+
+            console.log("XAxis ",xAxis)
+            allGroup = newData.filter(function (el) {
+                return (el != null || typeof el != "undefined") && el !== String(xAxis) ;
+            });
+
+            console.log("allGroup ",allGroup)
+
+
+            d3.select("#"+divId)
+                .append("select").attr("id","changedValue").selectAll("option")
+                .data(allGroup)
+                .enter()
+                .append('option')
+                .text(function (d) {
+                    return d;
+                })
+                .attr("value", function (d) {
+                    return d;
+                })
+
+            var groups = d3.map(data, function (d) {
+                return (d[xAxis])
+            }).keys()
+
+            var x = d3.scalePoint()
+                .round(true)
+                .range([0, width])
+                .padding(.1)
+
+            x.domain(groups)
+
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            var  y = d3.scaleLinear()
+                .range([height, 0]);
+            y.domain([d3.min(data, d => Math.abs(d[allGroup[0]])), d3.max(data, d => Math.abs(d[allGroup[0]]))])
+
+            svg.append("g").attr("id","gyId")
+                .call(d3.axisLeft(y));
+
+            let colorArray = []
+            for (let i in allGroup) {
+                colorArray.push('#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6))
+            }
+            let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
+
+            var lineColors = d3.scaleOrdinal()
+                .domain(allGroup)
+                .range(colorArray);
+
+
+
+            var Tooltip = d3.select("#"+divId)
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "2px")
+                .style("border-radius", "5px")
+                .style("padding", "5px")
+
+            // Three function that change the tooltip when user hover / move / leave a cell
+            var mouseover = function(d) {
+                Tooltip
+                    .style("opacity", 1)
+            }
+            var mousemove = function(d) {
+                Tooltip
+                    .html("Exact value: " + d[allGroup[0]])
+                    .style("top", (d3.event.pageY + 10) + "px")
+                    .style("left", (d3.event.pageX + 10) + "px");
+            }
+            var mouseleave = function(d) {
+                Tooltip
+                    .style("opacity", 0)
+            }
+            var line = svg
+                .append('g')
+                .append("path")
+                .datum(data)
+                .attr("d", d3.line()
+                    .x(function (d) {
+                        return x(d[xAxis])
+                    })
+                    .y(function (d) {
+                        return y(d[allGroup[0]])
+                    })
+                )
+                .attr("stroke", function(d){ return lineColors(d[allGroup[0]]) })
+                .style("stroke-width", 2)
+                .style("fill", "none")
+
+            var dot = svg
+                .selectAll('circle')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr("class", "dot")
+                .attr("cx", function (d) {
+                    return x(d[xAxis])
+                })
+                .attr("cy", function (d) {
+                    return y(d[allGroup[0]])
+                })
+                .attr("r", 4)
+                .style("fill", color)
+                .attr("stroke", "white")   .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave)
+
+
+            function update(selectedGroup) {
+
+                var dataFilter = data.map(function (d) {
+                    return {xAxis: d[xAxis], value: d[selectedGroup]}
+                })
+                y.domain([d3.min(dataFilter, d =>
+                    Math.abs(d.value)), d3.max(dataFilter, d => Math.abs(d.value))])
+                document.getElementById("gyId").remove()
+
+                svg.append("g").attr("id","gyId")
+                    .call(d3.axisLeft(y));
+                line
+                    .datum(dataFilter)
+                    .transition()
+                    .duration(1000)
+                    .attr("d", d3.line()
+                        .x(function (d) {
+                            return x(d.xAxis)
+                        })
+                        .y(function (d) {
+                            return y(d.value)
+                        })
+                    )
+                dot
+                    .data(dataFilter)
+                    .transition()
+                    .duration(1000)
+                    .attr("cx", function (d) {
+                        return x(d.xAxis)
+                    })
+                    .attr("cy", function (d) {
+                        return y(d.value)
+                    })
+            }
+
+            d3.select("#changedValue").on("change", function (d) {
+                var selectedOption = d3.select(this).property("value")
+                update(selectedOption)
+            })
+
+        })
 }
 
 function setInputFilter(textbox, inputFilter) {
