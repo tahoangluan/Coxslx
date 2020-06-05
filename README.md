@@ -20,7 +20,9 @@ required : Bootstrap, JQuery, Nodejs, font-awesome
 ```
 First at all, After installing you have to import it to your projekt. For Example:
 ```html
-<script src="/node_modules/coxlsx/src/***.js" ></script>
+<script type="module" src="/node_modules/coxlsx/src/coxlsx.js" >
+  import {...} from "path/To/coxlsx.js"
+</script
 ```
   
 To render your file to table or visualize it to graphs you have to create a div container in which you want to visualize your data. Something like this:
@@ -36,7 +38,9 @@ For the data here:
 https://www.stats.govt.nz/assets/Uploads/Abortion-statistics/Abortion-statistics-Year-ended-December-2018/Download-data/abortion-statistics-year-ended-december-2018-abortions-by-age-of-woman-csv.csv
 Firstly import coxlsx:
 ```html
-<script src="/node_modules/coxlsx/src/***.js" ></script>
+<script type="module" src="/node_modules/coxlsx/src/coxlsx.js" >
+  import {render} from "path/To/coxlsx.js"
+</script>
 ```
 And then define your div
 ```html
