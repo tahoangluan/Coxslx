@@ -2,11 +2,50 @@
 Coxlsx is a JavaScript library for transforming and visualizing data using web standards. coxlsx helps you bring the selected data formats to life based on [D3.js](https://d3js.org/) and [Xlsx](https://sheetjs.com/) library. 
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://www.npmjs.com/)
-### Installation
+## Installation
 
 Coxlsx requires [Node.js](https://nodejs.org/) v4+, [D3.js](https://d3js.org/) v5,[Xlsx](https://sheetjs.com/),[jQuery](https://jquery.com/) and [Bootstrap](https://getbootstrap.com/)  to run.
 
-To Install it:
-$ npm install coxlsx
+To Install it you have to use npm
+`npm install coxlsx`
 
 
+Coxlsx ist written using [D3.js](https://d3js.org/) v5 and [Xlsx](https://sheetjs.com/).
+This repo has two main purposes:
+* Generate shareable `css` and `js` assets for use by others
+
+## Usage
+```html
+required : Bootstrap, JQuery, Nodejs, font-awesome
+```
+First at all, After installing you have to import it to your projekt. For Example:
+```html
+<script src="/node_modules/coxlsx/src/***.js" ></script>
+```
+  
+To render your file to table or visualize it to graphs you have to create a div container in which you want to visualize your data. Something like this:
+```html
+<div id="divId" ></div>
+```
+After that, in your own js your have to write just one line 
+```html
+render(fileUrl,divId)
+```
+## Example
+For the data here:
+https://www.stats.govt.nz/assets/Uploads/Abortion-statistics/Abortion-statistics-Year-ended-December-2018/Download-data/abortion-statistics-year-ended-december-2018-abortions-by-age-of-woman-csv.csv
+Firstly import coxlsx:
+```html
+<script src="/node_modules/coxlsx/src/***.js" ></script>
+```
+And then define your div
+```html
+<div id="divId" ></div>
+```
+After that render the data with url
+```html
+    render("https://www.stats.govt.nz/assets/Uploads/Abortion-statistics/Abortion-statistics-Year-ended-December-2018/Download-data/abortion-statistics-year-ended-december-2018-abortions-by-age-of-woman-csv.csv","divId")
+```
+#### Result
+Visulized Table 
+![Table](relative/path/to/img.jpg?raw=true "Title")
