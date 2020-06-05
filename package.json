@@ -1,5 +1,5 @@
 {
-  "name": "frontendlibrary",
+  "name": "coxlsx",
   "version": "1.0.0",
   "description": "Frontend Library for Data Transformation and Visualization",
   "main": "src/coxlsx.js",
