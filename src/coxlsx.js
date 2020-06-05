@@ -444,6 +444,7 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     chartModal(input, headers, "ConnectedChartModal", "xAxisConnectedChartSelect", "Connected Graph", "confirmConnectedchart",
         "It is a connected scatterplot is basically an hybrid between a scatterplot and a lineplot" +
         "You have to chose xAxis to render it.")
+
     if ($("#nbinsForm").length !== 0) {
         document.getElementById("nbinsForm").remove();
     }
@@ -454,6 +455,17 @@ function visualization(input, headers, divId, grid, buttonDiv) {
         .attr("value", Math.round(input.length / 2))
 
     grid.on("click", gridClick)
+
+    document.getElementById("confirmBarchart").onclick = function () {
+        let d = input
+        d = d.slice(0, document.getElementById("nbins").value)
+        graphVisualization(d, input, headers)
+    }
+    document.getElementById("confirmConnectedchart").onclick = function () {
+        let d = input
+        d = d.slice(0, document.getElementById("nbins").value)
+        graphVisualization(d, input, headers)
+    }
 
     function gridClick() {
         document.getElementById("divToVis").innerHTML = ""
@@ -474,7 +486,6 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     d3.select("#" + divId).append("div").attr("id", "divToVis")
 
     gridVisualization(input.slice(0, Math.round(input.length / 2)), headers, "divToVis")
-    graphVisualization(input.slice(0, document.getElementById("nbins").value),  input,headers)
     setInputFilter(document.getElementById("nbins"), function (value) {
         return /^[1-9]\d*$/.test(value) && (value === "" || parseInt(value) <= input.length);
     });
@@ -494,7 +505,7 @@ function visualization(input, headers, divId, grid, buttonDiv) {
 
 function createBarchart(data, divId, headerToVis, xAxis, barC) {
     var margin = {top: 10, right: 30, bottom: 20, left: 50},
-        width = 1400 - margin.top - margin.bottom;
+        width = 1400 - margin.top - margin.bottom,
     height = 400 - margin.top - margin.bottom;
 
     var svg = d3.select("#" + divId)
