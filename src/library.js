@@ -1,6 +1,6 @@
 function render(file, divId) {
 
-    let da = ["Histogram", "BarChart"]
+    let da = ["ConnectedChart", "BarChart"]
     var buttonDiv = d3.select("#" + divId).append("div").attr("class", "gridGraphBtnDiv")
     var grid = buttonDiv.append("button").text("Grid").attr("class", "btn btn-primary")
     var visualizationBtn = buttonDiv.append("div").attr("class", "dropdown");
@@ -98,7 +98,7 @@ function wrap(text, width) {
     })
 }
 
-function update(nbins, divId, headerToVis, xAxis, barC, input) {
+function updateBarChartByBins(nbins, divId, headerToVis, xAxis, barC, input) {
     createBarchart(nbins, divId, headerToVis, xAxis, barC)
     d3.select("#nbins").on("input", function () {
         let d = input
@@ -119,11 +119,11 @@ function changeBarStacked(nbins, divId, headerToVis, xAxis, input) {
         let selectedRadio = $('input[name=mode]:checked', '#modeForm').val()
         if (selectedRadio == "grouped") {
             $("#" + divId).contents(':not(form)').remove();
-            update(nbins, divId, headerToVis, xAxis, "grouped", input)
+            updateBarChartByBins(nbins, divId, headerToVis, xAxis, "grouped", input)
         }
         if (selectedRadio == "stacked") {
             $("#" + divId).contents(':not(form)').remove();
-            update(nbins, divId, headerToVis, xAxis, "stacked", input)
+            updateBarChartByBins(nbins, divId, headerToVis, xAxis, "stacked", input)
         }
     });
 }
@@ -239,7 +239,7 @@ function csvJSON(input, separator) {
     return output;
 }
 
-function graphVisualization(nbins, input) {
+function graphVisualization(nbins, input, headers) {
 
     $('#confirmBarchart').click(function () {
 
@@ -253,10 +253,17 @@ function graphVisualization(nbins, input) {
         $('#BarChartModal').modal('hide');
         barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
     });
+    $('#confirmConnectedchart').click(function () {
+        let xAxisBarChartSelected = d3.select("#xAxisConnectedChartSelect").node().value;
+
+        document.getElementById("divToVis").innerHTML = ""
+        $('#ConnectedChartModal').modal('hide');
+        updateConnectedChartByBins(nbins, headers, "divToVis", xAxisBarChartSelected, input)
+    });
 }
 
-function barChartModal(input, headers) {
-    var modal = d3.select("body").append("div").attr("class", "modal fade").attr("id", "BarChartModal")
+function chartModal(input, headers, idChart, xAxisId, textChart, submitBtnId, footerText) {
+    var modal = d3.select("body").append("div").attr("class", "modal fade").attr("id", idChart)
         .attr("tabindex", "-1")
         .attr("role", "dialog")
         .attr("aria-labelledby", "myModalLabel")
@@ -265,7 +272,7 @@ function barChartModal(input, headers) {
     var modal_dialog = modal.append("div").attr("class", "modal-dialog")
     var modal_content = modal_dialog.append("div").attr("class", "modal-content")
     var modal_header = modal_content.append("div").attr("class", "modal-header")
-    modal_header.append("h5").attr("class", "modal-title").attr("id", "myModalLabel").text("Bar Chart")
+    modal_header.append("h5").attr("class", "modal-title").attr("id", "myModalLabel").text(textChart)
     modal_header.append("button").attr("type", "button").attr("class", "close")
         .attr("data-dismiss", "modal").attr("aria-label", "Close").attr("aria-hidden", true)
         .text("x")
@@ -275,50 +282,50 @@ function barChartModal(input, headers) {
     fieldsetXAxis.append("legend").attr("class", "legendStyle").text("X Axis ")
     fieldsetXAxis.append("label").attr("class", "xAxisDiv")
         .text("Select").append("select")
-        .attr("id", "xAxisBarChartSelect")
+        .attr("id", xAxisId)
         .attr("style", "margin-left:10px").selectAll("option")
         .data(headers).enter().append("option").text(function (d) {
         return d
     })
-    modal_body.append("div").attr("class", "vl")
-    var fieldsetYAxis = modal_body.append("fieldset").attr("class", "fieldsetBorder")
-    fieldsetYAxis.append("legend").attr("class", "legendStyle").text("Y Axis ")
-    fieldsetYAxis.append("div").attr("class", "fieldsetYAxis").selectAll("input")
-        .data(headers)
-        .enter()
-        .append("div").attr("style", "margin-left: 10px;")
-        .append('label')
-        .attr('for', function (d, i) {
-            return 'a' + i;
-        })
-        .attr('order', function (d, i) {
-            return i;
-        })
-        .text(function (d) {
-            return d;
-        })
-        .append("input").attr("style", "margin-left:5px")
-        .attr("checked", true)
-        .attr("type", "checkbox")
-        .attr("name", "yAxisBarChartSelect")
-        .attr("value", function (d) {
-            return d
-        })
-        .attr("id", function (d, i) {
-            return 'a' + i;
-        })
 
+    if (textChart === "Bar Chart") {
+        modal_body.append("div").attr("class", "vl")
+        var fieldsetYAxis = modal_body.append("fieldset").attr("class", "fieldsetBorder")
+        fieldsetYAxis.append("legend").attr("class", "legendStyle").text("Y Axis ")
+        fieldsetYAxis.append("div").attr("class", "fieldsetYAxis").selectAll("input")
+            .data(headers)
+            .enter()
+            .append("div").attr("style", "margin-left: 10px;")
+            .append('label')
+            .attr('for', function (d, i) {
+                return 'a' + i;
+            })
+            .attr('order', function (d, i) {
+                return i;
+            })
+            .text(function (d) {
+                return d;
+            })
+            .append("input").attr("style", "margin-left:5px")
+            .attr("checked", true)
+            .attr("type", "checkbox")
+            .attr("name", "yAxisBarChartSelect")
+            .attr("value", function (d) {
+                return d
+            })
+            .attr("id", function (d, i) {
+                return 'a' + i;
+            })
+    }
     var modal_footer = modal_content.append("div").attr("class", "modal-footer")
-        .text("A bar chart plots numeric values for levels of a categorical feature as bars. " +
-            "Levels are plotted on one chart axis, and values are plotted on the other axis.")
+        .text(footerText)
     var pullRightDiv = modal_footer.append("div").attr("class", "pull-right")
     pullRightDiv.append("button").attr("class", "btn btn-secondary")
         .attr("data-dismiss", "modal").text("Cancel")
     pullRightDiv.append("div").attr("class", "pull-right").append("button").attr("class", "btn btn-warning")
         .attr("style", "margin-left:10px")
-        .attr("id", "confirmBarchart")
+        .attr("id", submitBtnId)
         .attr("type", "submit").text("Confirm")
-
 }
 
 function gridVisualization(input, headers, divId) {
@@ -401,11 +408,17 @@ function gridVisualization(input, headers, divId) {
 
 function visualization(input, headers, divId, grid, buttonDiv) {
 
-    //create BarChartModal
     if (document.getElementById("nbinsForm") != null) {
         $("#BarChartModal").remove();
+        $("#ConnectedChartModal").remove();
     }
-    barChartModal(input, headers)
+    chartModal(input, headers, "BarChartModal", "xAxisBarChartSelect", "Bar Chart", "confirmBarchart", "A bar chart plots numeric values for levels " +
+        "of a categorical feature as bars. " +
+        "Levels are plotted on one chart axis, and values are plotted on the other axis.")
+
+    chartModal(input, headers, "ConnectedChartModal", "xAxisConnectedChartSelect", "Connected Graph", "confirmConnectedchart",
+        "It is a connected scatterplot is basically an hybrid between a scatterplot and a lineplot" +
+        "You have to chose xAxis to render it.")
     if ($("#nbinsForm").length !== 0) {
         document.getElementById("nbinsForm").remove();
     }
@@ -420,12 +433,23 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     function gridClick() {
         document.getElementById("divToVis").innerHTML = ""
         gridVisualization(input.slice(0, document.getElementById("nbins").value), headers, "divToVis")
+        d3.select("#nbins").on("input", function () {
+            let d = input
+            d = d.slice(0, +this.value)
+            let grid = document.getElementById("gridVisualization")
+            let graph = document.getElementById("graphVisualization")
+            graphVisualization(d, input, headers)
+            if (grid != null && graph == null) {
+                document.getElementById("divToVis").innerHTML = ""
+                gridVisualization(d, headers, "divToVis")
+            }
+        });
     }
 
     d3.select("#" + divId).append("div").attr("id", "divToVis")
 
     gridVisualization(input.slice(0, Math.round(input.length / 2)), headers, "divToVis")
-    graphVisualization(input.slice(0, document.getElementById("nbins").value), input)
+    graphVisualization(input.slice(0, document.getElementById("nbins").value),  input,headers)
     setInputFilter(document.getElementById("nbins"), function (value) {
         return /^[1-9]\d*$/.test(value) && (value === "" || parseInt(value) <= input.length);
     });
@@ -435,20 +459,17 @@ function visualization(input, headers, divId, grid, buttonDiv) {
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
         let graph = document.getElementById("graphVisualization")
-        graphVisualization(d, input)
+        graphVisualization(d, input, headers)
         if (grid != null && graph == null) {
             document.getElementById("divToVis").innerHTML = ""
             gridVisualization(d, headers, "divToVis")
         }
     });
-    $("#nbins").on("change keyup paste", function () {
-
-    })
 }
 
 function createBarchart(data, divId, headerToVis, xAxis, barC) {
     var margin = {top: 10, right: 30, bottom: 20, left: 50},
-        width = 1000 - margin.top - margin.bottom;
+        width = 1400 - margin.top - margin.bottom;
     height = 400 - margin.top - margin.bottom;
 
     var svg = d3.select("#" + divId)
@@ -466,18 +487,7 @@ function createBarchart(data, divId, headerToVis, xAxis, barC) {
         colorArray.push(color)
     }
     var color = d3.scaleOrdinal().domain(subgroups).range(colorArray)
-
-    var tooltip = d3.select("#" + divId)
-        .append("div")
-        .style("opacity", 0)
-        .attr("class", "tooltip")
-        .style("position", "absolute")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "5px")
-        .style("padding", "10px")
-
+    var tooltip = tooltipFunction(divId)
     var mousemove = function (d) {
         tooltip
             .style("top", (d3.event.pageY + 10) + "px")
@@ -647,215 +657,236 @@ function createBarchart(data, divId, headerToVis, xAxis, barC) {
         })
 }
 
-function arr_diff (a1, a2) {
+function tooltipFunction(divId) {
+    var Tooltip = d3.select("#" + divId)
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px")
 
-    var a = [], diff = [];
-
-    for (var i = 0; i < a1.length; i++) {
-        a[a1[i]] = true;
-    }
-
-    for (var i = 0; i < a2.length; i++) {
-        if (a[a2[i]]) {
-            delete a[a2[i]];
-        } else {
-            a[a2[i]] = true;
-        }
-    }
-
-    for (var k in a) {
-        diff.push(k);
-    }
-
-    return diff;
+    return Tooltip
 }
 
-function lineChart(url, divId, xAxis) {
+function removeAllNanValue(headers, data, xAxis) {
+    let newData = headers.map(function (d) {
+
+        for (let i = 0; i < data.length; i++) {
+            if (!isNaN(data[i][d])) {
+                return d
+            }
+        }
+
+    })
+
+    newData = newData.filter(function (el) {
+        return (el != null || typeof el != "undefined") && el !== String(xAxis);
+    });
+    return newData
+}
+
+function updateConnectedChartByBins(data, headers, divId, xAxis, input) {
+    lineChart(data, headers, divId, xAxis)
+    d3.select("#nbins").on("input", function () {
+        let d = input
+        d = d.slice(0, +this.value)
+            $("#" + divId).contents(':not(select)').remove();
+        lineChart(d, headers, divId, xAxis, input)
+
+
+    });
+}
+
+function lineChart(data, headers, divId, xAxis) {
 
     var margin = {top: 10, right: 100, bottom: 30, left: 30},
         width = 1400 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-// append the svg object to the body of the page
+    var allGroup = headers
+
+    allGroup = removeAllNanValue(allGroup, data, xAxis)
+
+    d3.select("#" + divId).append("div").attr("class", "connectedChartSelectDiv")
+        .append("select").attr("id", "changedValue").selectAll("option")
+        .data(allGroup)
+        .enter()
+        .append('option')
+        .text(function (d) {
+            return d;
+        })
+        .attr("value", function (d) {
+            return d;
+        })
     var svg = d3.select("#" + divId)
-        .append("svg")
+        .append("svg").attr("style","margin-left: 20px;")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
-    //Read the data
-    d3.csv(url)
-        .then(function (data) {
+    var groups = d3.map(data, function (d) {
+        return (d[xAxis])
+    }).keys()
 
-            // List of groups (here I have one group per column)
-            var allGroup = data.columns
+    var x = d3.scalePoint()
+        .round(true)
+        .range([0, width], 3)
 
-            let newData = allGroup.map(function (d) {
+    x.domain(groups)
 
-               for (let i =0;i<data.length;i++){
-                   if (!isNaN(data[i][d])){
-                    return d
-                   }
-               }
+    let min = d3.min(data, d => Number(d[allGroup[0]])) < 0 ? d3.min(data, d => Number(d[allGroup[0]])) : 0
 
+    var y = d3.scaleLinear()
+        .range([height - 50, 0]);
+    y.domain([min, d3.max(data, d => Math.abs(d[allGroup[0]])+50)])
+
+    svg.append("g").attr("id", "gxId")
+        .attr("class", "axis")
+        .attr("transform", "translate(0," + y(0) + ")")
+        .call(d3.axisBottom(x).ticks(10)).selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.9em")
+        .attr("dy", "-1.6em")
+        .attr("transform", "rotate(-90)")
+        .call(wrap, x.bandwidth())
+
+    svg.append("g")
+        .attr("class", "y axis").attr("id", "gyId")
+        .call(d3.axisLeft(y).ticks(10).tickSize(5).tickFormat(d3.format(".0s")));
+
+    let colorArray = []
+    for (let i in allGroup) {
+        colorArray.push('#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6))
+    }
+    let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
+
+    var lineColors = d3.scaleOrdinal()
+        .domain(allGroup)
+        .range(colorArray);
+
+
+    var Tooltip = tooltipFunction(divId)
+    var mouseover = function (d) {
+        Tooltip
+            .style("opacity", 1)
+    }
+    var mousemove = function (d) {
+        Tooltip
+            .html("Exact value: " + d[allGroup[0]])
+            .style("top", (d3.event.pageY + 10) + "px")
+            .style("left", (d3.event.pageX + 10) + "px");
+    }
+    var mouseleave = function (d) {
+        Tooltip
+            .style("opacity", 0)
+    }
+    var line = svg
+        .append('g')
+        .append("path")
+        .datum(data)
+        .attr("d", d3.line()
+            .x(function (d) {
+                return x(d[xAxis])
             })
-
-            console.log("XAxis ",xAxis)
-            allGroup = newData.filter(function (el) {
-                return (el != null || typeof el != "undefined") && el !== String(xAxis) ;
-            });
-
-            console.log("allGroup ",allGroup)
-
-
-            d3.select("#"+divId)
-                .append("select").attr("id","changedValue").selectAll("option")
-                .data(allGroup)
-                .enter()
-                .append('option')
-                .text(function (d) {
-                    return d;
-                })
-                .attr("value", function (d) {
-                    return d;
-                })
-
-            var groups = d3.map(data, function (d) {
-                return (d[xAxis])
-            }).keys()
-
-            var x = d3.scalePoint()
-                .round(true)
-                .range([0, width])
-                .padding(.1)
-
-            x.domain(groups)
-
-            svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x));
-
-            var  y = d3.scaleLinear()
-                .range([height, 0]);
-            y.domain([d3.min(data, d => Math.abs(d[allGroup[0]])), d3.max(data, d => Math.abs(d[allGroup[0]]))])
-
-            svg.append("g").attr("id","gyId")
-                .call(d3.axisLeft(y));
-
-            let colorArray = []
-            for (let i in allGroup) {
-                colorArray.push('#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6))
-            }
-            let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
-
-            var lineColors = d3.scaleOrdinal()
-                .domain(allGroup)
-                .range(colorArray);
-
-
-
-            var Tooltip = d3.select("#"+divId)
-                .append("div")
-                .style("opacity", 0)
-                .attr("class", "tooltip")
-                .style("background-color", "white")
-                .style("border", "solid")
-                .style("border-width", "2px")
-                .style("border-radius", "5px")
-                .style("padding", "5px")
-
-            // Three function that change the tooltip when user hover / move / leave a cell
-            var mouseover = function(d) {
-                Tooltip
-                    .style("opacity", 1)
-            }
-            var mousemove = function(d) {
-                Tooltip
-                    .html("Exact value: " + d[allGroup[0]])
-                    .style("top", (d3.event.pageY + 10) + "px")
-                    .style("left", (d3.event.pageX + 10) + "px");
-            }
-            var mouseleave = function(d) {
-                Tooltip
-                    .style("opacity", 0)
-            }
-            var line = svg
-                .append('g')
-                .append("path")
-                .datum(data)
-                .attr("d", d3.line()
-                    .x(function (d) {
-                        return x(d[xAxis])
-                    })
-                    .y(function (d) {
-                        return y(d[allGroup[0]])
-                    })
-                )
-                .attr("stroke", function(d){ return lineColors(d[allGroup[0]]) })
-                .style("stroke-width", 2)
-                .style("fill", "none")
-
-            var dot = svg
-                .selectAll('circle')
-                .data(data)
-                .enter()
-                .append('circle')
-                .attr("class", "dot")
-                .attr("cx", function (d) {
-                    return x(d[xAxis])
-                })
-                .attr("cy", function (d) {
-                    return y(d[allGroup[0]])
-                })
-                .attr("r", 4)
-                .style("fill", color)
-                .attr("stroke", "white")   .on("mouseover", mouseover)
-                .on("mousemove", mousemove)
-                .on("mouseleave", mouseleave)
-
-
-            function update(selectedGroup) {
-
-                var dataFilter = data.map(function (d) {
-                    return {xAxis: d[xAxis], value: d[selectedGroup]}
-                })
-                y.domain([d3.min(dataFilter, d =>
-                    Math.abs(d.value)), d3.max(dataFilter, d => Math.abs(d.value))])
-                document.getElementById("gyId").remove()
-
-                svg.append("g").attr("id","gyId")
-                    .call(d3.axisLeft(y));
-                line
-                    .datum(dataFilter)
-                    .transition()
-                    .duration(1000)
-                    .attr("d", d3.line()
-                        .x(function (d) {
-                            return x(d.xAxis)
-                        })
-                        .y(function (d) {
-                            return y(d.value)
-                        })
-                    )
-                dot
-                    .data(dataFilter)
-                    .transition()
-                    .duration(1000)
-                    .attr("cx", function (d) {
-                        return x(d.xAxis)
-                    })
-                    .attr("cy", function (d) {
-                        return y(d.value)
-                    })
-            }
-
-            d3.select("#changedValue").on("change", function (d) {
-                var selectedOption = d3.select(this).property("value")
-                update(selectedOption)
+            .y(function (d) {
+                return y(d[allGroup[0]])
             })
-
+        )
+        .attr("stroke", function (d) {
+            return lineColors(d[allGroup[0]])
         })
+        .style("stroke-width", 2)
+        .style("fill", "none")
+
+    var dot = svg
+        .selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr("class", "dot")
+        .attr("cx", function (d) {
+            return x(d[xAxis])
+        })
+        .attr("cy", function (d) {
+            return y(d[allGroup[0]])
+        })
+        .attr("r", 4)
+        .style("fill", color)
+        .attr("stroke", "white")
+    dot.on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave)
+
+
+    function update(selectedGroup) {
+
+        var dataFilter = data.map(function (d) {
+            return {xAxis: d[xAxis], value: d[selectedGroup]}
+        })
+        let minUpdate = d3.min(dataFilter, d =>
+            Number(d.value)) < 0 ? d3.min(dataFilter, d =>
+            Number(d.value)) : 0
+
+        y.domain([minUpdate, d3.max(dataFilter, d => Math.abs(d.value))])
+        document.getElementById("gyId").remove()
+        document.getElementById("gxId").remove()
+        svg.append("g").attr("id", "gxId")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + y(0) + ")")
+            .call(d3.axisBottom(x).ticks(10)).selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.9em")
+            .attr("dy", "-1.6em")
+            .attr("transform", "rotate(-90)")
+            .call(wrap, x.bandwidth())
+
+        svg.append("g")
+            .attr("class", "y axis").attr("id", "gyId")
+            .call(d3.axisLeft(y).ticks(10).tickSize(5).tickFormat(d3.format(".0s")));
+        line
+            .datum(dataFilter)
+            .transition()
+            .duration(1000)
+            .attr("d", d3.line()
+                .x(function (d) {
+                    return x(d.xAxis)
+                })
+                .y(function (d) {
+                    return y(d.value)
+                })
+            )
+
+        dot
+            .data(dataFilter)
+            .transition()
+            .duration(1000)
+            .attr("cx", function (d) {
+                return x(d.xAxis)
+            })
+            .attr("cy", function (d) {
+                return y(d.value)
+            })
+
+        mousemove = function (d) {
+            Tooltip
+                .html("Exact value: " + d.value)
+                .style("top", (d3.event.pageY + 10) + "px")
+                .style("left", (d3.event.pageX + 10) + "px");
+        }
+        dot.on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
+    }
+
+    d3.select("#changedValue").on("change", function (d) {
+        var selectedOption = d3.select(this).property("value")
+        update(selectedOption)
+    })
+
 }
 
 function setInputFilter(textbox, inputFilter) {
