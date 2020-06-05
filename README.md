@@ -51,5 +51,34 @@ After that render the data with url
     render("https://www.stats.govt.nz/assets/Uploads/Abortion-statistics/Abortion-statistics-Year-ended-December-2018/Download-data/abortion-statistics-year-ended-december-2018-abortions-by-age-of-woman-csv.csv","divId")
 ```
 #### Result
-Visulized Table 
-![Table](relative/path/to/img.jpg?raw=true "Title")
+###### Visualized Table
+<p>
+  <img src="https://github.com/tahoangluan/FrontendLibrary/blob/master/table.png" width="300">
+</p>
+<p>
+    <em>Visualized Table</em>
+</p>
+<p>
+  <img src="https://github.com/tahoangluan/FrontendLibrary/blob/master/createChart.png" width="300">
+</p>
+<p>
+    <em>Create Chart</em>
+</p>
+<p>
+  <img src="https://github.com/tahoangluan/FrontendLibrary/blob/master/chartModal.png" width="300">
+</p>
+<p>
+    <em>Chart Modal</em>
+</p>
+<p>
+<img src="https://github.com/tahoangluan/FrontendLibrary/blob/master/barChart.png" width="300">
+</p>
+<p>
+    <em>Stacked- & Bar Chart</em>
+</p>
+<p>
+  <img src="https://github.com/tahoangluan/FrontendLibrary/blob/master/connectedScatterplot.png" width="300">
+</p>
+<p>
+    <em>Connected Scatter Plot</em>
+</p>
