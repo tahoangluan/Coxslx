@@ -1,3 +1,28 @@
+import "/node_modules/d3/dist/d3.min.js";
+import "/node_modules/d3/dist/d3.js";
+import "/node_modules/d3-dsv/dist/d3-dsv.js";
+import "/node_modules/xlsx/dist/xlsx.full.min.js";
+import "/node_modules/jquery/dist/jquery.min.js";
+import "/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
+
+
+function includeCss(fileName,cssId) {
+    if (!document.getElementById(cssId))
+    {
+        var head  = document.getElementsByTagName('head')[0];
+        var link  = document.createElement('link');
+        link.rel  = 'stylesheet';
+        link.type = 'text/css';
+        link.href = fileName;
+        link.media = 'all';
+        head.appendChild(link);
+    }
+}
+includeCss('src/main.css',"mainCss")
+includeCss('/node_modules/font-awesome/css/font-awesome.css',"fontAwesomeCss")
+includeCss('node_modules/bootstrap/dist/css/bootstrap.min.css',"bootstrapCss")
+
+
 function render(file, divId) {
 
     let da = ["ConnectedChart", "BarChart"]
@@ -905,3 +930,5 @@ function setInputFilter(textbox, inputFilter) {
         });
     });
 }
+
+export {render};
