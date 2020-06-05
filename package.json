@@ -2,7 +2,7 @@
   "name": "frontendlibrary",
   "version": "1.0.0",
   "description": "Frontend Library for Data Transformation and Visualization",
-  "main": "src/library.js",
+  "main": "src/coxlsx.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
