@@ -264,26 +264,35 @@ function csvJSON(input, separator) {
     return output;
 }
 
+function generateBC(nbins,input) {
+    let xAxisBarChartSelected = d3.select("#xAxisBarChartSelect").node().value;
+    var yAxisBarChartSelected = [];
+
+    $.each($("input:checkbox[name='yAxisBarChartSelect']:checked"), function () {
+        yAxisBarChartSelected.push($(this).val());
+    });
+    document.getElementById("divToVis").innerHTML = ""
+    $('#BarChartModal').modal('hide');
+    console.log("nbins ",nbins)
+    barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
+}
+
+function generateCC(nbins, input,headers) {
+    let xAxisConnectedChartSelect = d3.select("#xAxisConnectedChartSelect").node().value;
+
+    document.getElementById("divToVis").innerHTML = ""
+
+    $('#ConnectedChartModal').modal('hide');
+    updateConnectedChartByBins(nbins, headers, "divToVis", xAxisConnectedChartSelect, input)
+}
+
 function graphVisualization(nbins, input, headers) {
 
     $('#confirmBarchart').click(function () {
-
-        let xAxisBarChartSelected = d3.select("#xAxisBarChartSelect").node().value;
-        var yAxisBarChartSelected = [];
-
-        $.each($("input:checkbox[name='yAxisBarChartSelect']:checked"), function () {
-            yAxisBarChartSelected.push($(this).val());
-        });
-        document.getElementById("divToVis").innerHTML = ""
-        $('#BarChartModal').modal('hide');
-        barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
+        generateBC(nbins,input)
     });
     $('#confirmConnectedchart').click(function () {
-        let xAxisBarChartSelected = d3.select("#xAxisConnectedChartSelect").node().value;
-
-        document.getElementById("divToVis").innerHTML = ""
-        $('#ConnectedChartModal').modal('hide');
-        updateConnectedChartByBins(nbins, headers, "divToVis", xAxisBarChartSelected, input)
+        generateCC(nbins, input,headers)
     });
 }
 
@@ -459,12 +468,12 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     document.getElementById("confirmBarchart").onclick = function () {
         let d = input
         d = d.slice(0, document.getElementById("nbins").value)
-        graphVisualization(d, input, headers)
+        generateBC(d,input)
     }
     document.getElementById("confirmConnectedchart").onclick = function () {
         let d = input
         d = d.slice(0, document.getElementById("nbins").value)
-        graphVisualization(d, input, headers)
+        generateCC(d, input, headers)
     }
 
     function gridClick() {
@@ -475,7 +484,6 @@ function visualization(input, headers, divId, grid, buttonDiv) {
             d = d.slice(0, +this.value)
             let grid = document.getElementById("gridVisualization")
             let graph = document.getElementById("graphVisualization")
-            graphVisualization(d, input, headers)
             if (grid != null && graph == null) {
                 document.getElementById("divToVis").innerHTML = ""
                 gridVisualization(d, headers, "divToVis")
@@ -495,7 +503,6 @@ function visualization(input, headers, divId, grid, buttonDiv) {
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
         let graph = document.getElementById("graphVisualization")
-        graphVisualization(d, input, headers)
         if (grid != null && graph == null) {
             document.getElementById("divToVis").innerHTML = ""
             gridVisualization(d, headers, "divToVis")
@@ -577,7 +584,7 @@ function createBarchart(data, divId, headerToVis, xAxis, barC) {
 
         svg.append("g")
             .attr("class", "y axis")
-            .call(d3.axisLeft(y).tickSize(0));
+            .call(d3.axisLeft(y).tickSize(5));
 
         svg.append("g")
             .selectAll("g")
@@ -635,7 +642,7 @@ function createBarchart(data, divId, headerToVis, xAxis, barC) {
 
         svg.append("g")
             .attr("class", "y axis")
-            .call(d3.axisLeft(y).tickSize(0));
+            .call(d3.axisLeft(y).tickSize(5));
         svg.append("g")
             .selectAll("g")
             .data(data)
@@ -731,8 +738,6 @@ function updateConnectedChartByBins(data, headers, divId, xAxis, input) {
         d = d.slice(0, +this.value)
             $("#" + divId).contents(':not(select)').remove();
         lineChart(d, headers, divId, xAxis, input)
-
-
     });
 }
 
