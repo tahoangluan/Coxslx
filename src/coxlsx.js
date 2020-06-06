@@ -125,7 +125,7 @@ function wrap(text, width) {
 
 function updateBarChartByBins(nbins, divId, headerToVis, xAxis, barC, input) {
     createBarchart(nbins, divId, headerToVis, xAxis, barC)
-    d3.select("#nbins").on("input", function () {
+    $("#nbins").on("input", function () {
         let d = input
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
@@ -133,7 +133,7 @@ function updateBarChartByBins(nbins, divId, headerToVis, xAxis, barC, input) {
         if (grid == null && graph != null) {
             $("#" + divId).contents(':not(form)').remove();
             createBarchart(d, divId, headerToVis, xAxis, barC)
-            changeBarStacked(d, divId, headerToVis, xAxis)
+            changeBarStacked(d, divId, headerToVis, xAxis,input)
 
         }
     });
@@ -273,7 +273,6 @@ function generateBC(nbins,input) {
     });
     document.getElementById("divToVis").innerHTML = ""
     $('#BarChartModal').modal('hide');
-    console.log("nbins ",nbins)
     barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
 }
 
@@ -440,6 +439,41 @@ function gridVisualization(input, headers, divId) {
     return table;
 }
 
+function changeNbinsFormStyle(binsFormId) {
+    let nbinsform_nav = d3.select("#"+binsFormId).append("div").attr("class",binsFormId+"-nav")
+    let nbinsFormUp = nbinsform_nav.append("div").attr("class","nbinsForm-btn nbinsForm-up").text("+")
+    let nbinsFormDown= nbinsform_nav.append("div").attr("class","nbinsForm-btn nbinsForm-down").text("-")
+
+    let inputForm = $("#"+binsFormId).find('input[type="number"]'),
+        min = inputForm.attr('min'),
+        max = inputForm.attr('max');
+    nbinsFormUp.on("click",function (d) {
+        var oldValue = parseFloat(inputForm.val());
+        if (oldValue >= max) {
+            var newVal = oldValue;
+        } else {
+            var newVal = oldValue + 1;
+        }
+        inputForm.val(newVal)
+        inputForm.trigger("change");
+        inputForm.trigger("input");
+        inputForm.trigger("keypress");
+   })
+    nbinsFormDown.on("click",function (d) {
+        var oldValue = parseFloat(inputForm.val());
+        if (oldValue <= min) {
+            var newVal = oldValue;
+        } else {
+            var newVal = oldValue - 1;
+        }
+        inputForm.val(newVal);
+        inputForm.trigger("input");
+        inputForm.trigger("change");
+        inputForm.trigger("keypress");
+   })
+
+}
+
 function visualization(input, headers, divId, grid, buttonDiv) {
 
     if (document.getElementById("nbinsForm") != null) {
@@ -459,9 +493,11 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     }
 
     var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
-    nbinsDiv.append("label").text("nbins").append("input").attr("id", "nbins").attr("class", "barChartRadio")
+    nbinsDiv.append("input").attr("id", "nbins").attr("class", "barChartRadio")
         .attr("type", "number").attr("min", "1").attr("id", "nbins").attr("max", input.length)
         .attr("value", Math.round(input.length / 2))
+
+    changeNbinsFormStyle("nbinsForm")
 
     grid.on("click", gridClick)
 
@@ -479,7 +515,7 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     function gridClick() {
         document.getElementById("divToVis").innerHTML = ""
         gridVisualization(input.slice(0, document.getElementById("nbins").value), headers, "divToVis")
-        d3.select("#nbins").on("input", function () {
+        $("#nbins").on("input", function () {
             let d = input
             d = d.slice(0, +this.value)
             let grid = document.getElementById("gridVisualization")
@@ -498,7 +534,7 @@ function visualization(input, headers, divId, grid, buttonDiv) {
         return /^[1-9]\d*$/.test(value) && (value === "" || parseInt(value) <= input.length);
     });
 
-    d3.select("#nbins").on("input", function () {
+    $("#nbins").on("input", function () {
         let d = input
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
@@ -732,27 +768,12 @@ function removeAllNanValue(headers, data, xAxis) {
 }
 
 function updateConnectedChartByBins(data, headers, divId, xAxis, input) {
-    lineChart(data, headers, divId, xAxis)
-    d3.select("#nbins").on("input", function () {
-        let d = input
-        d = d.slice(0, +this.value)
-            $("#" + divId).contents(':not(select)').remove();
-        lineChart(d, headers, divId, xAxis, input)
-    });
-}
-
-function lineChart(data, headers, divId, xAxis) {
-
-    var margin = {top: 10, right: 100, bottom: 30, left: 30},
-        width = 1400 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
-
     var allGroup = headers
 
     allGroup = removeAllNanValue(allGroup, data, xAxis)
 
     d3.select("#" + divId).append("div").attr("class", "connectedChartSelectDiv")
-        .append("select").attr("id", "changedValue").selectAll("option")
+        .append("select").attr("id", "connectedChartSelectDivId").selectAll("option")
         .data(allGroup)
         .enter()
         .append('option')
@@ -762,8 +783,25 @@ function lineChart(data, headers, divId, xAxis) {
         .attr("value", function (d) {
             return d;
         })
+    lineChart(data, allGroup, divId, xAxis,allGroup[0])
+    $("#nbins").on("input", function () {
+        let d = input
+        d = d.slice(0, +this.value)
+        var selectedOption = $( "#connectedChartSelectDivId option:selected" ).text()
+        $("#svgLineChartId").remove();
+        lineChart(d, allGroup, divId, xAxis,selectedOption)
+    });
+}
+
+function lineChart(data, allGroup, divId, xAxis,selectedValue) {
+
+    var margin = {top: 10, right: 100, bottom: 30, left: 30},
+        width = 1400 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+
     var svg = d3.select("#" + divId)
-        .append("svg").attr("style","margin-left: 20px;")
+        .append("svg").attr("style","margin-left: 20px;").attr("id","svgLineChartId")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
@@ -778,12 +816,11 @@ function lineChart(data, headers, divId, xAxis) {
         .range([0, width], 3)
 
     x.domain(groups)
-
-    let min = d3.min(data, d => Number(d[allGroup[0]])) < 0 ? d3.min(data, d => Number(d[allGroup[0]])) : 0
-
     var y = d3.scaleLinear()
         .range([height - 50, 0]);
-    y.domain([min, d3.max(data, d => Math.abs(d[allGroup[0]])+50)])
+    let min = d3.min(data, d => Number(d[selectedValue])) < 0 ? d3.min(data, d => Number(d[selectedValue])) : 0
+    y.domain([min, d3.max(data, d => Math.abs(d[selectedValue])+50)])
+
 
     svg.append("g").attr("id", "gxId")
         .attr("class", "axis")
@@ -797,7 +834,7 @@ function lineChart(data, headers, divId, xAxis) {
 
     svg.append("g")
         .attr("class", "y axis").attr("id", "gyId")
-        .call(d3.axisLeft(y).ticks(10).tickSize(5).tickFormat(d3.format(".0s")));
+        .call(d3.axisLeft(y).ticks(10).tickSize(5));
 
     let colorArray = []
     for (let i in allGroup) {
@@ -816,10 +853,10 @@ function lineChart(data, headers, divId, xAxis) {
             .style("opacity", 1)
     }
     var mousemove = function (d) {
-        Tooltip
-            .html("Exact value: " + d[allGroup[0]])
-            .style("top", (d3.event.pageY + 10) + "px")
-            .style("left", (d3.event.pageX + 10) + "px");
+            Tooltip
+                .html("Exact value: " + d[selectedValue])
+                .style("top", (d3.event.pageY + 10) + "px")
+                .style("left", (d3.event.pageX + 10) + "px");
     }
     var mouseleave = function (d) {
         Tooltip
@@ -834,11 +871,12 @@ function lineChart(data, headers, divId, xAxis) {
                 return x(d[xAxis])
             })
             .y(function (d) {
-                return y(d[allGroup[0]])
+                    return y(d[selectedValue])
             })
         )
         .attr("stroke", function (d) {
-            return lineColors(d[allGroup[0]])
+                return lineColors(d[selectedValue])
+
         })
         .style("stroke-width", 2)
         .style("fill", "none")
@@ -853,7 +891,7 @@ function lineChart(data, headers, divId, xAxis) {
             return x(d[xAxis])
         })
         .attr("cy", function (d) {
-            return y(d[allGroup[0]])
+                return y(d[selectedValue])
         })
         .attr("r", 4)
         .style("fill", color)
@@ -872,7 +910,7 @@ function lineChart(data, headers, divId, xAxis) {
             Number(d.value)) < 0 ? d3.min(dataFilter, d =>
             Number(d.value)) : 0
 
-        y.domain([minUpdate, d3.max(dataFilter, d => Math.abs(d.value))])
+        y.domain([minUpdate, d3.max(dataFilter, d => Math.abs(d.value)+50)])
         document.getElementById("gyId").remove()
         document.getElementById("gxId").remove()
         svg.append("g").attr("id", "gxId")
@@ -887,7 +925,7 @@ function lineChart(data, headers, divId, xAxis) {
 
         svg.append("g")
             .attr("class", "y axis").attr("id", "gyId")
-            .call(d3.axisLeft(y).ticks(10).tickSize(5).tickFormat(d3.format(".0s")));
+            .call(d3.axisLeft(y).ticks(10).tickSize(5));
         line
             .datum(dataFilter)
             .transition()
@@ -923,7 +961,7 @@ function lineChart(data, headers, divId, xAxis) {
             .on("mouseleave", mouseleave)
     }
 
-    d3.select("#changedValue").on("change", function (d) {
+    d3.select("#connectedChartSelectDivId").on("change", function (d) {
         var selectedOption = d3.select(this).property("value")
         update(selectedOption)
     })

@@ -178,4 +178,68 @@ th.aes:after {
     justify-content: center;
     margin-bottom: 20px;
 }
+#nbinsForm{
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button
+{
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number]
+{
+    -moz-appearance: textfield;
+}
+
+#nbinsForm input {
+    width: 45px;
+    height: 37.6px;
+    display: block;
+    margin: 0;
+    text-align: center;
+    border: 1px solid #007bff;
+    border-radius: 3px 0px 0px 3px;
+}
+
+#nbinsForm input:focus {
+    outline: 0;
+}
+.nbinsForm-nav {
+    float: left;
+    position: relative;
+    height: 37.6px;
+}
+
+.nbinsForm-btn {
+    position: relative;
+    cursor: pointer;
+    border-right: 1px solid transparent;
+    width: 20px;
+    text-align: center;
+    color: #fff;
+    font-size: 13px;
+    font-family: "Trebuchet MS", Helvetica, sans-serif !important;
+    border-bottom: 1px solid transparent;
+    background: #007bff;
+    font-weight: bold;
+}
+
+.nbinsForm-btn.nbinsForm-up {
+    position: absolute;
+    height: 50%;
+    border-bottom: 1px solid white;
+    border-top: 1px solid transparent;
+    border-radius: 0px 3px 0px 0px;
+}
+
+.nbinsForm-btn.nbinsForm-down {
+    position: absolute;
+    bottom: 0px;
+    height: 50%;
+    border-radius: 0px 0px 3px 0px;
+}
 
