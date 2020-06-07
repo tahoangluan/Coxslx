@@ -1,10 +1,8 @@
 import "/node_modules/d3/dist/d3.min.js";
 import "/node_modules/d3/dist/d3.js";
 import "/node_modules/d3-dsv/dist/d3-dsv.js";
-import "/node_modules/xlsx/dist/xlsx.full.min.js";
 import "/node_modules/jquery/dist/jquery.min.js";
 import "/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
-
 
 function includeCss(fileName,cssId) {
     if (!document.getElementById(cssId))
@@ -20,7 +18,7 @@ function includeCss(fileName,cssId) {
 }
 includeCss('src/main.css',"mainCss")
 includeCss('/node_modules/font-awesome/css/font-awesome.css',"fontAwesomeCss")
-includeCss('node_modules/bootstrap/dist/css/bootstrap.min.css',"bootstrapCss")
+includeCss('/node_modules/bootstrap/dist/css/bootstrap.min.css',"bootstrapCss")
 
 
 function render(file, divId) {
@@ -81,9 +79,16 @@ function createCORSRequest(method, url) {
 
 function barChart(nbins, divId, headerToVis, xAxis, input) {
 
-    var form = d3.select("#" + divId)
+    if ($(".connectedChartSelectDiv")!=null){
+        $(".connectedChartSelectDiv").remove()
+    }
+    if ($(".barChartRadioForm")!=null){
+        $(".barChartRadioForm").remove()
+    }
+
+    var form = d3.select(".gridGraphBtnDiv")
         .append("form").attr("id", "graphVisualization").attr("class", "barChartRadioForm");
-    ;
+
     var radioDiv = form.append("div").attr("id", "modeForm")
     radioDiv.append("label").text("Stacked").append("input").attr("class", "barChartRadio")
         .attr("type", "radio")
@@ -129,12 +134,10 @@ function updateBarChartByBins(nbins, divId, headerToVis, xAxis, barC, input) {
         let d = input
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
-        let graph = document.getElementById("graphVisualization")
-        if (grid == null && graph != null) {
+        if (grid == null) {
             $("#" + divId).contents(':not(form)').remove();
             createBarchart(d, divId, headerToVis, xAxis, barC)
             changeBarStacked(d, divId, headerToVis, xAxis,input)
-
         }
     });
 }
@@ -201,7 +204,7 @@ function createDiv(sheetname, i) {
     var button = document.createElement('BUTTON');
     var text = document.createTextNode(sheetname);
     button.id = "btn_" + sheetname
-    button.style = "order:" + i
+    button.style = "order:" + i+";margin-right:3px"
     button.appendChild(text);
     return button;
 }
@@ -219,6 +222,7 @@ function createAndModifyDivs(mainDivId, workSheets) {
         myDivs.push(createDiv(workSheets[i], i));
         buttonDiv.appendChild(myDivs[i]);
     }
+    buttonDiv.id = "sheetsDiv"
     buttonDiv.style = "display: flex;flex-wrap: wrap;justify-content: center;margin-top: 10px;"
     mainDiv.appendChild(buttonDiv)
 }
@@ -278,9 +282,7 @@ function generateBC(nbins,input) {
 
 function generateCC(nbins, input,headers) {
     let xAxisConnectedChartSelect = d3.select("#xAxisConnectedChartSelect").node().value;
-
     document.getElementById("divToVis").innerHTML = ""
-
     $('#ConnectedChartModal').modal('hide');
     updateConnectedChartByBins(nbins, headers, "divToVis", xAxisConnectedChartSelect, input)
 }
@@ -363,7 +365,7 @@ function chartModal(input, headers, idChart, xAxisId, textChart, submitBtnId, fo
 
 function gridVisualization(input, headers, divId) {
     var table = d3.select("#" + divId)
-            .append("div").attr("id", "gridVisualization")
+            .append("div").attr("id", "gridVisualization").attr("style","margin-left: 20px;")
             .append("table").attr("id", "tblVis"),
         thead = table.append("thead"),
         tbody = table.append("tbody"),
@@ -475,7 +477,12 @@ function changeNbinsFormStyle(binsFormId) {
 }
 
 function visualization(input, headers, divId, grid, buttonDiv) {
-
+    if ($(".barChartRadioForm")!=null){
+        $(".barChartRadioForm").remove()
+    }
+    if ($(".connectedChartSelectDiv")!=null){
+        $(".connectedChartSelectDiv").remove()
+    }
     if (document.getElementById("nbinsForm") != null) {
         $("#BarChartModal").remove();
         $("#ConnectedChartModal").remove();
@@ -513,17 +520,19 @@ function visualization(input, headers, divId, grid, buttonDiv) {
     }
 
     function gridClick() {
+        if ($(".barChartRadioForm")!=null){
+            $(".barChartRadioForm").remove()
+        }
+        if ($(".connectedChartSelectDiv")!=null){
+            $(".connectedChartSelectDiv").remove()
+        }
         document.getElementById("divToVis").innerHTML = ""
         gridVisualization(input.slice(0, document.getElementById("nbins").value), headers, "divToVis")
         $("#nbins").on("input", function () {
             let d = input
             d = d.slice(0, +this.value)
-            let grid = document.getElementById("gridVisualization")
-            let graph = document.getElementById("graphVisualization")
-            if (grid != null && graph == null) {
-                document.getElementById("divToVis").innerHTML = ""
-                gridVisualization(d, headers, "divToVis")
-            }
+            document.getElementById("divToVis").innerHTML = ""
+            gridVisualization(d, headers, "divToVis")
         });
     }
 
@@ -538,8 +547,7 @@ function visualization(input, headers, divId, grid, buttonDiv) {
         let d = input
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
-        let graph = document.getElementById("graphVisualization")
-        if (grid != null && graph == null) {
+        if (grid != null) {
             document.getElementById("divToVis").innerHTML = ""
             gridVisualization(d, headers, "divToVis")
         }
@@ -771,9 +779,14 @@ function updateConnectedChartByBins(data, headers, divId, xAxis, input) {
     var allGroup = headers
 
     allGroup = removeAllNanValue(allGroup, data, xAxis)
-
-    d3.select("#" + divId).append("div").attr("class", "connectedChartSelectDiv")
-        .append("select").attr("id", "connectedChartSelectDivId").selectAll("option")
+    if ($(".barChartRadioForm")!=null){
+        $(".barChartRadioForm").remove()
+    }
+    if ($(".connectedChartSelectDiv")!=null){
+        $(".connectedChartSelectDiv").remove()
+    }
+    d3.select(".gridGraphBtnDiv").append("div").attr("class", "connectedChartSelectDiv")
+        .append("select").attr("id", "connectedChartSelectId").selectAll("option")
         .data(allGroup)
         .enter()
         .append('option')
@@ -787,8 +800,9 @@ function updateConnectedChartByBins(data, headers, divId, xAxis, input) {
     $("#nbins").on("input", function () {
         let d = input
         d = d.slice(0, +this.value)
-        var selectedOption = $( "#connectedChartSelectDivId option:selected" ).text()
+        var selectedOption = $( "#connectedChartSelectId option:selected" ).text()
         $("#svgLineChartId").remove();
+        document.getElementById("divToVis").innerHTML = ""
         lineChart(d, allGroup, divId, xAxis,selectedOption)
     });
 }
@@ -801,12 +815,13 @@ function lineChart(data, allGroup, divId, xAxis,selectedValue) {
 
 
     var svg = d3.select("#" + divId)
-        .append("svg").attr("style","margin-left: 20px;").attr("id","svgLineChartId")
+        .append("svg").attr("id","svgLineChartId")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+
     var groups = d3.map(data, function (d) {
         return (d[xAxis])
     }).keys()
@@ -814,6 +829,7 @@ function lineChart(data, allGroup, divId, xAxis,selectedValue) {
     var x = d3.scalePoint()
         .round(true)
         .range([0, width], 3)
+        .padding(0.3)
 
     x.domain(groups)
     var y = d3.scaleLinear()
@@ -832,9 +848,10 @@ function lineChart(data, allGroup, divId, xAxis,selectedValue) {
         .attr("transform", "rotate(-90)")
         .call(wrap, x.bandwidth())
 
+    let formatValue = d3.format(".2s");
     svg.append("g")
         .attr("class", "y axis").attr("id", "gyId")
-        .call(d3.axisLeft(y).ticks(10).tickSize(5));
+        .call(d3.axisLeft(y).ticks(10).tickSize(5).tickFormat(function(d) { return formatValue(d)}));
 
     let colorArray = []
     for (let i in allGroup) {
@@ -854,7 +871,7 @@ function lineChart(data, allGroup, divId, xAxis,selectedValue) {
     }
     var mousemove = function (d) {
             Tooltip
-                .html("Exact value: " + d[selectedValue])
+                .html("Name: " + d[xAxis] + "<br>" + "Value: " + d[selectedValue])
                 .style("top", (d3.event.pageY + 10) + "px")
                 .style("left", (d3.event.pageX + 10) + "px");
     }
@@ -925,7 +942,7 @@ function lineChart(data, allGroup, divId, xAxis,selectedValue) {
 
         svg.append("g")
             .attr("class", "y axis").attr("id", "gyId")
-            .call(d3.axisLeft(y).ticks(10).tickSize(5));
+            .call(d3.axisLeft(y).ticks(10).tickSize(5).tickFormat(function(d) { return formatValue(d)}));
         line
             .datum(dataFilter)
             .transition()
@@ -961,7 +978,7 @@ function lineChart(data, allGroup, divId, xAxis,selectedValue) {
             .on("mouseleave", mouseleave)
     }
 
-    d3.select("#connectedChartSelectDivId").on("change", function (d) {
+    d3.select("#connectedChartSelectId").on("change", function (d) {
         var selectedOption = d3.select(this).property("value")
         update(selectedOption)
     })
