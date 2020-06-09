@@ -134,11 +134,11 @@ function updateBarChartByBins(nbins, divId, headerToVis, xAxis, barC, input) {
         let d = input
         d = d.slice(0, +this.value)
         let grid = document.getElementById("gridVisualization")
-        if (grid == null) {
             $("#" + divId).contents(':not(form)').remove();
+            document.getElementById("divToVis").innerHTML = ""
             createBarchart(d, divId, headerToVis, xAxis, barC)
             changeBarStacked(d, divId, headerToVis, xAxis,input)
-        }
+
     });
 }
 
