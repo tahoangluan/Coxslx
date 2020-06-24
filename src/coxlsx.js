@@ -5,6 +5,7 @@ import "/node_modules/jquery/dist/jquery.min.js";
 import "/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
 import {errorHTML,createBtnDiv} from "/src/dataVisualization.js"
 import {Transformator} from "/src/dataTransformation.js"
+import {webSocket} from "/src/WebSocket.js"
 
 function includeCss(fileName, cssId) {
     if (!document.getElementById(cssId)) {
@@ -38,4 +39,4 @@ function render(file, divId) {
     }
 }
 
-export {render}
+export {render,webSocket}
