@@ -1,3 +1,6 @@
 /node_modules/
 /src/TestFiles/
 
+/test.html
+/test33.html
+/src/realTimeChartMulti.js
