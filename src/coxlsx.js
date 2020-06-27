@@ -1,12 +1,11 @@
-import "/node_modules/d3/dist/d3.min.js";
-import "/node_modules/d3/dist/d3.js";
-import "/node_modules/d3-dsv/dist/d3-dsv.js";
-import "/node_modules/jquery/dist/jquery.min.js";
-import "/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
-import {errorHTML,createBtnDiv} from "/src/dataVisualization.js"
-import {Transformator} from "/src/dataTransformation.js"
-import {webSocket} from "/src/WebSocket.js"
-
+//import "/node_modules/d3/dist/d3.min.js";
+//import "/node_modules/d3/dist/d3.js";
+//import "../node_modules/d3-dsv/dist/d3-dsv.js";
+//import "../node_modules/jquery/dist/jquery.min.js";
+//import "../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js";
+import {errorHTML,createBtnDiv} from "./dataVisualization.js"
+import {Transformator} from "./dataTransformation.js"
+import {webSocket} from "./WebSocket.js"
 function includeCss(fileName, cssId) {
     if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName('head')[0];
@@ -36,6 +35,16 @@ function render(file, divId) {
         errorHTML(divId, "File type not supported!",
             "You are trying to render a file type that is not supported. " +
             "Please make sure your file is created in xlx, xlsx, ods or csv.")
+    }
+}
+
+export function checkDataExtension(url){
+    if (url.endsWith(".csv")) {
+        return "csv"
+    } else if (url.endsWith(".ods") || url.endsWith(".xlsx") || url.endsWith(".xls")) {
+        return "excel"
+    } else {
+        return "notsupported"
     }
 }
 

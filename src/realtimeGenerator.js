@@ -1,4 +1,4 @@
-import {realTimeChartRender} from "/src/realtimeDataVisualization.js"
+import {realTimeChartRender} from "./realtimeDataVisualization.js"
 export class RealtimeGenerator {
     constructor(divId) {
         this.divId = divId
@@ -10,8 +10,6 @@ export class RealtimeGenerator {
         d3.select("#"+divId).append("div")
             .attr("id", "chartDiv")
             .call(chart);
-
-
         return chart
     }
     dataGenerator(data, chart) {
@@ -39,10 +37,6 @@ export class RealtimeGenerator {
             }
             new RealtimeGenerator().dataGenerator();
         }, timeout);
-    }
-
-    timeScale(normal) {
-        return 0;
     }
 }
 

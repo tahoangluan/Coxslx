@@ -1,3 +1,5 @@
+let d3 = require("d3")
+
 class Helper {
     wrap(text, width) {
         text.each(function () {
@@ -812,6 +814,7 @@ export function errorHTML(divId, headerErrorText, text2) {
     error.append("p").text(text2)
 }
 export function createAndModifyDivs(mainDivId, workSheets) {
+    console.log("work ",workSheets)
     var buttonDiv = document.createElement("div");
     var showSheet = document.createElement("div");
     showSheet.style = "display: flex"

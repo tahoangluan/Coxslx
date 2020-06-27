@@ -1,4 +1,7 @@
-import {ChartCreator, createAndModifyDivs, errorHTML} from "/src/dataVisualization.js";
+import {ChartCreator, createAndModifyDivs, errorHTML} from "./dataVisualization.js";
+let d3 = require("d3")
+let XLSX = require("xlsx")
+const fetch = require("node-fetch");
 
 function createCORSRequest(method, url) {
     var xhr = new XMLHttpRequest();
@@ -24,13 +27,14 @@ export class Transformator {
         let file = this.file
         let divId = this.divId
         let buttonDiv = this.buttonDiv
-        var url = file;
-        var request = createCORSRequest('GET', url);
+        var request = createCORSRequest('GET', file);
         if (!request) {
             throw new Error('CORS not supported');
         }
         request.responseType = "arraybuffer";
         request.onload = function (e) {
+            console.log("ydasdasdasdad")
+
             if (e.target.status !== 404) {
                 var data1 = new Uint8Array(request.response)
                 var workbookArray = XLSX.read(data1, {type: "array"});
@@ -50,6 +54,7 @@ export class Transformator {
                 var defaultworksheet = workbookArray.Sheets[defaultSheetname];
 
                 var defaultSheet = XLSX.utils.sheet_to_json(defaultworksheet, {raw: true, defval: ""})
+
                 let defaultExcelDiagramm = new ChartCreator()
                 defaultExcelDiagramm.visualization(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", buttonDiv)
                 for (let i = 0; i < newSheetNames.length; i++) {
