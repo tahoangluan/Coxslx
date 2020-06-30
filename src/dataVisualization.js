@@ -1,5 +1,5 @@
 let d3 = require("d3")
-
+const $ = require('jquery');
 class Helper {
     wrap(text, width) {
         text.each(function () {
@@ -70,7 +70,7 @@ class Helper {
         return newData
     }
 }
-class Grid {
+export class Grid {
     gridVisualization(input, headers, divId) {
         var table = d3.select("#" + divId)
                 .append("div").attr("id", "gridVisualization").attr("style","margin-left: 20px;")
@@ -719,7 +719,7 @@ class Generator{
         new Graph().updateConnectedChartByBins(nbins, headers, "divToVis", xAxisConnectedChartSelect, input)
     }
 }
-function createDiv(sheetname, i) {
+export function createDiv(sheetname, i) {
     var button = document.createElement('BUTTON');
     var text = document.createTextNode(sheetname);
     button.id = "btn_" + sheetname

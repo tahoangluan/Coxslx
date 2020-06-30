@@ -1,11 +1,13 @@
-import {render} from  "./coxlsx"
 let d3 = require("d3")
+let XLSX = require("xlsx")
 let fs = require("fs")
-import {createBtnDiv, errorHTML} from "./dataVisualization"
+import {createBtnDiv, errorHTML,createAndModifyDivs,createDiv,Grid} from "./dataVisualization"
 import {checkDataExtension} from "./coxlsx"
 import {Transformator} from "./dataTransformation"
 const $ = require('jquery');
-const fetch = require('node-fetch') ;
+import {webSocket} from "./WebSocket.js"
+import {RealtimeGenerator} from "./realtimeGenerator.js";
+
 describe('Tests for methods createBtnDiv', function() {
     var div = document.createElement('div');
     div.id = "createBtnDiv"
@@ -67,34 +69,45 @@ describe('Tests for methods errorHTML', function() {
         expect(d3.select("#errorHTML").select("div").select("p").text()).toBe("Text of p-Element");
     });
 });
+describe('Tests for methods createDiv', function() {
+    let button = createDiv("Sheet1",1)
+    test("Sheet Button id",function () {
+        expect(button.id).toBe("btn_Sheet1")
+    })
+});
+function createCORSRequest(method, url) {
+    var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.responseType = "arraybuffer";
+        var data1 = new Uint8Array(xhr.response)
+        var workbookArray = XLSX.read(data1, {type: "array"});
+        var sheetName = workbookArray.SheetNames
+        var worksheet = workbookArray.Sheets[sheetName];
+        xhr.send()
+
+    createAndModifyDivs("createAndModifyDivs",worksheet)
+    test("Sheet html exists",function () {
+        expect(d3.select("#showSheet").empty()).toBe(false)
+    })
+    test("Get style of sheet",function () {
+        expect(d3.select("#showSheet").attr("style")).toBe("display: flex;")
+    })
+    test("Button of sheet exits",function () {
+        expect(d3.select("#sheetsDiv").empty()).toBe( false)
+    })
+    test("Button of sheet",function () {
+        expect(d3.select("#sheetsDiv").attr("style")).toBe("display: flex; flex-wrap: wrap; justify-content: center; margin-top: 10px;")
+    })
+
+}
 describe('Tests for methods createAndModifyDivs', function() {
     var div = document.createElement('div');
     div.id = "createAndModifyDivs"
     document.body.appendChild(div)
-    const viewText = () => {
-        fs.readFile('src/TestFiles/steuereinnahmen_bis_september_2013.ods', 'utf8', (err, data) => {
-            if (err) throw err;
-            console.log(data);
-        });
+    const viewText = async () => {
+      await createCORSRequest("GET","src/TestFiles/Example.xlsx")
     };
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
-    test('prints poem to console', done => {
-        const logSpy = jest.spyOn(console, 'log');
-        let readFileCallback;
-        // @ts-ignore
-        jest.spyOn(fs, 'readFile').mockImplementation((path, options, callback) => {
-            readFileCallback = callback;
-        });
-        viewText()
-        let mockPoem = "asdasd"
-        readFileCallback(null, mockPoem);
-        expect(fs.readFile).toBeCalledWith('src/TestFiles/steuereinnahmen_bis_september_2013.ods', 'utf8', readFileCallback);
-        done();
-    });
-
+    viewText()
 });
 describe("Check Data Extension",function () {
     test('should return csv', function () {
@@ -118,18 +131,70 @@ describe("Check Data Extension",function () {
             .toBe("notsupported")
     });
 })
-
-jest.mock("./dataTransformation");
-describe("Tests data transformation",function () {
+jest.mock("./realtimeGenerator");
+describe("Tests for realtime data visualization",function () {
     beforeEach(() => {
-        // Clear all instances and calls to constructor and all methods:
+        RealtimeGenerator.mockClear();
+    });
+    var div = document.createElement('div');
+    div.id = "realTimeDiv"
+    document.body.appendChild(div)
+    it('check if the consumer called the class constructor', () => {
+        expect(RealtimeGenerator).toHaveBeenCalledTimes(0);
+        webSocket("ws://datastore.k2dev.fokus.fraunhofer.de/datastream/OpenData.SmartCity.Environment",1000,"realTimeDiv")
+        expect(RealtimeGenerator).toHaveBeenCalledTimes(1);
+    });
+    it('check if the consumer called a method on the class instance 1', () => {
+        expect(RealtimeGenerator).not.toHaveBeenCalled();
+
+        webSocket("ws://datastore.k2dev.fokus.fraunhofer.de/datastream/OpenData.SmartCity.Environment",1000,"realTimeDiv")
+
+        expect(RealtimeGenerator).toHaveBeenCalledTimes(1);
+
+        // mock.instances is available with automatic mocks:
+        const realtimegenerator = RealtimeGenerator.mock.instances[0];
+
+        const divGeneratorMock = realtimegenerator.divGenerator
+        expect(divGeneratorMock).toHaveBeenCalledWith();
+        expect(divGeneratorMock).toHaveBeenCalledTimes(1);
+        const dataGeneratorMock = realtimegenerator.dataGenerator
+        //Data Generator have not been called
+        expect(dataGeneratorMock).toHaveBeenCalledTimes(0);
+    });
+    describe("Mock Error",function () {
+        beforeAll(() => {
+            RealtimeGenerator.mockImplementation(() => {
+                return {
+                    divGenerator: () => {
+                        throw new Error('Test error');
+                    },
+                    dataGenerator: () => {
+                        throw new Error('Test error');
+                    },
+                };
+            });
+        });
+
+        it('Should throw an error when calling divGenerator or dataGenerator', () => {
+            let reltime = new RealtimeGenerator("realTimeDiv")
+            expect(() => reltime.dataGenerator()).toThrow();
+            expect(() => reltime.divGenerator()).toThrow();
+        });
+    })
+    it('The consumer should be able to call new() on RealtimeGenerator', () => {
+        let reltime = new RealtimeGenerator("realTimeDiv")
+        expect(reltime).toBeTruthy();
+    });
+})
+jest.mock("./dataTransformation");
+describe("Tests for data transformation",function () {
+    beforeEach(() => {
         Transformator.mockClear();
     });
     var div = document.createElement('div');
     div.id = "createBtnDiv"
     document.body.appendChild(div)
     let buttonDiv = createBtnDiv("createBtnDiv")
-
 
     it('check if the consumer called the class constructor', () => {
         let transformator = new Transformator(
@@ -166,7 +231,6 @@ describe("Tests data transformation",function () {
         // mock.instances is available with automatic mocks:
         const transformator1 = Transformator.mock.instances[0];
         const mockxlxsReadFile = transformator1.xlxsReadFile;
-        //xlsxReadFile has no arg
         expect(mockxlxsReadFile).toHaveBeenCalledWith();
         expect(mockxlxsReadFile).toHaveBeenCalledTimes(1);
     });
@@ -198,3 +262,112 @@ describe("Tests data transformation",function () {
     });
 
 })
+
+describe("Tests for table creation",function () {
+    var input = "id,altersgruppe,fallzahl,differenz,inzidenz\n" +
+        "3,0-4,77,3,40.6\n" +
+        "6, 5-9,69,1,40.9\n" +
+        "9, 10-14,104,0,68\n"
+    var headers = ["id","altersgruppe","fallzahl","differenz","inzidenz"]
+    var div = document.createElement('div');
+    div.id = "gridTable"
+    document.body.appendChild(div)
+    let grid = new Grid()
+
+    let table = grid.gridVisualization(input,headers,"gridTable")
+    test("Table was created ",function () {
+        expect(d3.select("#tblVis").empty()).toBe(false)
+    })
+    test("Column id was created ",function () {
+        expect(d3.select("#th_id").empty()).toBe(false)
+    })
+    test("Return text of column id ",function () {
+        expect(d3.select("#th_id").text()).toBe("id")
+    })
+    test("'Title's Hide Column button'  of column id",function () {
+        expect($("#th_id").find("button").attr("title")).toBe("Hide Column")
+    })
+    test("'Class's Hide Column button'  of column id",function () {
+        expect($("#th_id").find("button").attr("class")).toBe("pull-right btnEyeSlash")
+    })
+    $("#th_id").find("button").click()
+    test("Show footer after hiding",function () {
+        expect(d3.select(".footerRestoreColumn").empty()).toBe(false)
+    })
+
+    test("Column altersgruppe was created ",function () {
+        expect(d3.select("#th_altersgruppe").empty()).toBe(false)
+    })
+    test("Return text of column altersgruppe ",function () {
+        expect(d3.select("#th_altersgruppe").text()).toBe("altersgruppe")
+    })
+    test("'Title's Hide Column button'  of column altersgruppe",function () {
+        expect($("#th_altersgruppe").find("button").attr("title")).toBe("Hide Column")
+    })
+    test("'Class's Hide Column button'  of column id",function () {
+        expect($("#th_altersgruppe").find("button").attr("class")).toBe("pull-right btnEyeSlash")
+    })
+    $("#th_altersgruppe").find("button").click()
+    test("Show footer after hiding",function () {
+        expect(d3.select(".footerRestoreColumn").empty()).toBe(false)
+    })
+
+
+    test("Column fallzahl was created ",function () {
+        expect(d3.select("#th_fallzahl").empty()).toBe(false)
+    })
+    test("Return text of column fallzahl ",function () {
+        expect(d3.select("#th_fallzahl").text()).toBe("fallzahl")
+    })
+    test("'Title's Hide Column button'  of column fallzahl",function () {
+        expect($("#th_fallzahl").find("button").attr("title")).toBe("Hide Column")
+    })
+    test("'Class's Hide Column button'  of column fallzahl",function () {
+        expect($("#th_fallzahl").find("button").attr("class")).toBe("pull-right btnEyeSlash")
+    })
+    $("#th_fallzahl").find("button").click()
+    test("Show footer after hiding",function () {
+        expect(d3.select(".footerRestoreColumn").empty()).toBe(false)
+    })
+
+    test("Column differenz was created ",function () {
+        expect(d3.select("#th_differenz").empty()).toBe(false)
+    })
+    test("Return text of column differenz ",function () {
+        expect(d3.select("#th_differenz").text()).toBe("differenz")
+    })
+    test("'Title's Hide Column button'  of column differenz",function () {
+        expect($("#th_differenz").find("button").attr("title")).toBe("Hide Column")
+    })
+    test("'Class's Hide Column button'  of column differenz",function () {
+        expect($("#th_differenz").find("button").attr("class")).toBe("pull-right btnEyeSlash")
+    })
+    $("#th_differenz").find("button").click()
+    test("Show footer after hiding",function () {
+        expect(d3.select(".footerRestoreColumn").empty()).toBe(false)
+    })
+
+    test("Column inzidenz was created ",function () {
+        expect(d3.select("#th_inzidenz").empty()).toBe(false)
+    })
+    test("Return text of column inzidenz ",function () {
+        expect(d3.select("#th_inzidenz").text()).toBe("inzidenz")
+    })
+    test("'Title's Hide Column button'  of column inzidenz",function () {
+        expect($("#th_inzidenz").find("button").attr("title")).toBe("Hide Column")
+    })
+    test("'Class's Hide Column button'  of column inzidenz",function () {
+        expect($("#th_inzidenz").find("button").attr("class")).toBe("pull-right btnEyeSlash")
+    })
+    $("#th_inzidenz").find("button").click()
+    test("Show footer after hiding",function () {
+        expect(d3.select(".footerRestoreColumn").empty()).toBe(false)
+    })
+
+
+    test("Check tbody not empty",function () {
+        expect($("#tblVis").find('tbody tr')).not.toBeNull()
+    })
+
+})
+
