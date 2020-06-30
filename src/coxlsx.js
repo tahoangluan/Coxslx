@@ -23,19 +23,42 @@ includeCss('/node_modules/font-awesome/css/font-awesome.css', "fontAwesomeCss")
 includeCss('/node_modules/bootstrap/dist/css/bootstrap.min.css', "bootstrapCss")
 
 
+
+async function checkURL(url)
+{
+    let response = await fetch(url);
+    let data = await response.blob().then(blob => {
+        return {
+            contentType: response.headers.get("Content-Type"),
+            status: response.status
+        }})
+    return data;
+}
+
 function render(file, divId) {
     let buttonDiv = createBtnDiv(divId)
     let transformator = new Transformator(file, divId, buttonDiv)
-    if (file.endsWith(".csv")) {
-        transformator.csvFromFileToTable()
-    } else if (file.endsWith(".ods") || file.endsWith(".xlsx") || file.endsWith(".xls")) {
-        transformator.xlxsReadFile()
-    } else {
-        console.log("Not Support")
-        errorHTML(divId, "File type not supported!",
-            "You are trying to render a file type that is not supported. " +
-            "Please make sure your file is created in xlx, xlsx, ods or csv.")
-    }
+    checkURL(file).then(data => {
+            if (data.status !== 404){
+                if (data.contentType.includes("csv")){
+                    transformator.csvFromFileToTable()
+
+                }
+                else if (data.contentType.includes("excel")){
+                    transformator.xlxsReadFile()
+                }
+                else {
+                    console.log("Not Support")
+                    errorHTML(divId, "File type not supported!",
+                        "You are trying to render a file type that is not supported. " +
+                        "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
+            }
+            else {
+                return "fileNotFound"
+            }
+        }
+    );
+
 }
 
 export function checkDataExtension(url){
