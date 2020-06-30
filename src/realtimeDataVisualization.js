@@ -1,3 +1,4 @@
+import {Helper} from "./dataVisualization.js"
 export function realTimeChartRender() {
     var datum, data,
         barId = 0,
@@ -78,13 +79,27 @@ export function realTimeChartRender() {
                 .attr("id", function() {
                     return "bar-" + barId++;
                 });
-
+            var Tooltip = new Helper().tooltipFunction("viewDiv")
+            var mouseover = function (d) {
+                Tooltip
+                    .style("opacity", 1)
+            }
+            var mousemove = function (d) {
+                Tooltip
+                    .html("Beschreibung hier")
+                    .style("top", (d3.event.pageY + 10) + "px")
+                    .style("left", (d3.event.pageX + 10) + "px");
+            }
+            var mouseleave = function (d) {
+                Tooltip
+                    .style("opacity", 0)
+            }
             viewPoint
                 .attr("cx", function(d) { return Math.round(x(d.time-1000));})
                 .attr("cy", function(d) {return height/2;})
                 .attr("r", function(d) {return d.size / 2;})
                 .style("fill", function(d) { return d.color || "black"; })
-                .style("fill-opacity", function(d) { return d.opacity || 1; });
+                .style("fill-opacity", function(d) { return d.opacity || 1; })
 
 
         }

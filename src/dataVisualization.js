@@ -1,4 +1,4 @@
-class Helper {
+export class Helper {
     wrap(text, width) {
         text.each(function () {
             var text = d3.select(this),

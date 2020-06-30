@@ -25,8 +25,7 @@ export class RealtimeGenerator {
             if (data!=null){
                 let jsonData = JSON.parse(data)
                 var now = new Date(new Date().getTime());
-                console.log("jsonData ",jsonData)
-                console.log("now ",now)
+                console.log("Message: ",jsonData)
                 let color = '#' + Math.floor(Math.random() * Math.pow(2, 32) ^ 0xffffff).toString(16).substr(-6);
                 var point = {
                     time: now,
