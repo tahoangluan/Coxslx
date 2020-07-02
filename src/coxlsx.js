@@ -38,19 +38,23 @@ function render(file, divId) {
     let buttonDiv = createBtnDiv(divId)
     let transformator = new Transformator(file, divId, buttonDiv)
     checkURL(file).then(data => {
-            if (data.status !== 404){
-                if (data.contentType.includes("csv")){
-                    transformator.csvFromFileToTable()
-                }
-                else if (data.contentType.includes("excel")){
-                    transformator.xlxsReadFile()
-                }
-                else {
-                    console.log("Not Support")
-                    errorHTML(divId, "File type not supported!",
-                        "You are trying to render a file type that is not supported. " +
-                        "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
+        if (data.status !== 404){
+            if (data.contentType.includes("csv")||
+                data.contentType.includes("tab-separated")
+                ||file.endsWith(".csv")||file.endsWith(".tsv")){
+                transformator.csvFromFileToTable()
             }
+            else if (data.contentType.includes("excel")||
+                data.contentType.includes("spreadsheet")||
+                file.endsWith(".ods")||file.endsWith(".xlsx")||file.endsWith(".xls")){
+                transformator.xlxsReadFile()
+            }
+            else {
+                console.log("Not Support")
+                errorHTML(divId, "File type not supported!",
+                    "You are trying to render a file type that is not supported. " +
+                    "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
+        }
             else {
                 return "fileNotFound"
             }
