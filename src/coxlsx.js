@@ -22,9 +22,9 @@ includeCss('src/main.css', "mainCss")
 includeCss('/node_modules/font-awesome/css/font-awesome.css', "fontAwesomeCss")
 includeCss('/node_modules/bootstrap/dist/css/bootstrap.min.css', "bootstrapCss")
 
+const fetch = require("node-fetch");
 
-
-async function checkURL(url)
+export async function checkURL(url)
 {
     let response = await fetch(url);
     let data = await response.blob().then(blob => {
@@ -42,7 +42,6 @@ function render(file, divId) {
             if (data.status !== 404){
                 if (data.contentType.includes("csv")){
                     transformator.csvFromFileToTable()
-
                 }
                 else if (data.contentType.includes("excel")){
                     transformator.xlxsReadFile()

@@ -8,6 +8,9 @@ const $ = require('jquery');
 import {webSocket} from "./WebSocket.js"
 import {RealtimeGenerator} from "./realtimeGenerator.js";
 
+import {checkURL,render} from "./coxlsx.js"
+
+
 describe('Tests for methods createBtnDiv', function() {
     var div = document.createElement('div');
     div.id = "createBtnDiv"
@@ -109,28 +112,7 @@ describe('Tests for methods createAndModifyDivs', function() {
     };
     viewText()
 });
-describe("Check Data Extension",function () {
-    test('should return csv', function () {
-        expect(checkDataExtension("https://gist.githubusercontent.com/d3noob/fa0f16e271cb191ae85f/raw/bf896176236341f56a55b36c8fc40e32c73051ad/treedata.csv"))
-            .toBe("csv")
-    });
-    test('get ods -> should return excel', function () {
-        expect(checkDataExtension("https://gist.githubusercontent.com/d3noob/fa0f16e271cb191ae85f/raw/bf896176236341f56a55b36c8fc40e32c73051ad/treedata.ods"))
-            .toBe("excel")
-    });
-    test('get xls -> should return excel', function () {
-        expect(checkDataExtension("https://gist.githubusercontent.com/d3noob/fa0f16e271cb191ae85f/raw/bf896176236341f56a55b36c8fc40e32c73051ad/treedata.xls"))
-            .toBe("excel")
-    });
-    test('get xlsx -> should return excel', function () {
-        expect(checkDataExtension("https://gist.githubusercontent.com/d3noob/fa0f16e271cb191ae85f/raw/bf896176236341f56a55b36c8fc40e32c73051ad/treedata.xlsx"))
-            .toBe("excel")
-    });
-    test('should return not supported', function () {
-        expect(checkDataExtension("https://gist.githubusercontent.com/d3noob/fa0f16e271cb191ae85f/raw/bf896176236341f56a55b36c8fc40e32c73051ad/treedatasda.casdadsasv"))
-            .toBe("notsupported")
-    });
-})
+
 jest.mock("./realtimeGenerator");
 describe("Tests for realtime data visualization",function () {
     beforeEach(() => {
@@ -262,7 +244,6 @@ describe("Tests for data transformation",function () {
     });
 
 })
-
 describe("Tests for table creation",function () {
     var input = "id,altersgruppe,fallzahl,differenz,inzidenz\n" +
         "3,0-4,77,3,40.6\n" +
@@ -370,4 +351,59 @@ describe("Tests for table creation",function () {
     })
 
 })
+describe("Tests for checkUrl",function () {
 
+    it('checkUrl should return the csv contentType and status 200 of url', async () => {
+        const json = {
+            contentType: "application/x-csv",
+            status: 200
+        }
+        const data =  await checkURL("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv").then(da => {
+            expect(da).toEqual(json);
+        })
+    });
+    it('checkUrl should return the Excel contentType and status 200 of url with xls-Extension', async () => {
+        const json = {
+            contentType: "application/vnd.ms-excel",
+            status: 200
+        }
+        const data =  await checkURL("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLS_10.xls").then(da => {
+            expect(da).toEqual(json);
+        })
+    });
+    it('checkUrl should return the Excel contentType and status 200 of url with xlsx-Extension', async () => {
+        const json = {
+            contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            status: 200
+        }
+        const data =  await checkURL("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLSX_10.xlsx").then(da => {
+            expect(da).toEqual(json);
+        })
+    });
+    it('checkUrl should return the Excel contentType and status 200 of url with ods-Extension', async () => {
+        const json = {
+            contentType: "application/vnd.oasis.opendocument.spreadsheet",
+            status: 200
+        }
+        const data =  await checkURL("https://example-files.online-convert.com/spreadsheet/ods/example.ods").then(da => {
+            expect(da).toEqual(json);
+        })
+    });
+
+    it('checkUrl should return the wrong contentType and status of url', async () => {
+        const json = {
+            contentType: "application/xml",
+            status: 403
+        }
+        const data =  await checkURL("http://samplecsvs.s3.amazonaws.com/Wrong.csv").then(da => {
+            expect(da).toEqual(json);
+        })
+    });
+})
+
+
+
+it('checkUrl should return the csv contentType and status 200 of url', async () => {
+    const data =  await render("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv","divId")
+    console.log("data ",data)
+});
