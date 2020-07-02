@@ -33,7 +33,6 @@ export class Transformator {
         }
         request.responseType = "arraybuffer";
         request.onload = function (e) {
-            console.log("ydasdasdasdad")
 
             if (e.target.status !== 404) {
                 var data1 = new Uint8Array(request.response)
@@ -97,19 +96,7 @@ export class Transformator {
     }
 }
 
-export async function csvRead(file,divId) {
-   const response = await d3.csv(file)
-       console.log("response.data ",response.data)
+export function csvRead(file) {
+    const response =  d3.csv(file)
     return response
-}
-
-export async function checkURL2(url)
-{
-    let response = await fetch(url);
-    let data = await response.blob().then(blob => {
-        return {
-            contentType: response.headers.get("Content-Type"),
-            status: response.status
-        }})
-    return data;
 }

@@ -6,9 +6,8 @@ const $ = require('jquery');
 import "isomorphic-fetch"
 import {webSocket} from "./WebSocket.js"
 import {RealtimeGenerator} from "./realtimeGenerator.js";
-import {Transformator} from "./dataTransformation.js"
-import {checkURL,csvRead} from "./coxlsx.js"
-/*
+import {Transformator,csvRead} from "./dataTransformation.js"
+import {checkURL} from "./coxlsx.js"
 
 describe('Tests for methods createBtnDiv', function() {
     var div = document.createElement('div');
@@ -111,7 +110,6 @@ describe('Tests for methods createAndModifyDivs', function() {
     };
     viewText()
 });
-
 jest.mock("./realtimeGenerator");
 describe("Tests for realtime data visualization",function () {
     beforeEach(() => {
@@ -169,6 +167,7 @@ describe("Tests for realtime data visualization",function () {
 })
 jest.mock("./dataTransformation");
 describe("Tests for data transformation",function () {
+    jest.clearAllMocks()
     beforeEach(() => {
         Transformator.mockClear();
     });
@@ -400,15 +399,3 @@ describe("Tests for checkUrl",function () {
     });
 })
 
-*/
-describe("a",function () {
-    it('Test Test', async () => {
-        const json = {
-            contentType: "application/xml",
-            status: 403
-        }
-        const data = await csvRead("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv").then(function (dat) {
-            console.log("data ",dat.columns)
-        })
-    });
-})
