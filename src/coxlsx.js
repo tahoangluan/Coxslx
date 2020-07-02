@@ -17,6 +17,7 @@ function includeCss(fileName, cssId) {
         head.appendChild(link);
     }
 }
+let d3 = require("d3")
 
 includeCss('src/main.css', "mainCss")
 includeCss('/node_modules/font-awesome/css/font-awesome.css', "fontAwesomeCss")
@@ -53,21 +54,16 @@ function render(file, divId) {
                         "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
             }
             else {
-                return "fileNotFound"
+                errorHTML(divId, "File not found!",
+                    "File not found!")
             }
         }
     );
 
 }
-
-export function checkDataExtension(url){
-    if (url.endsWith(".csv")) {
-        return "csv"
-    } else if (url.endsWith(".ods") || url.endsWith(".xlsx") || url.endsWith(".xls")) {
-        return "excel"
-    } else {
-        return "notsupported"
-    }
+export function csvRead(file) {
+    const response =  d3.csv(file)
+    return response
 }
 
 export {render,webSocket}

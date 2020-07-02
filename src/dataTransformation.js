@@ -96,3 +96,20 @@ export class Transformator {
             })
     }
 }
+
+export async function csvRead(file,divId) {
+   const response = await d3.csv(file)
+       console.log("response.data ",response.data)
+    return response
+}
+
+export async function checkURL2(url)
+{
+    let response = await fetch(url);
+    let data = await response.blob().then(blob => {
+        return {
+            contentType: response.headers.get("Content-Type"),
+            status: response.status
+        }})
+    return data;
+}

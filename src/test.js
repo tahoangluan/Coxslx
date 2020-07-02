@@ -2,14 +2,13 @@ let d3 = require("d3")
 let XLSX = require("xlsx")
 let fs = require("fs")
 import {createBtnDiv, errorHTML,createAndModifyDivs,createDiv,Grid} from "./dataVisualization"
-import {checkDataExtension} from "./coxlsx"
-import {Transformator} from "./dataTransformation"
 const $ = require('jquery');
+import "isomorphic-fetch"
 import {webSocket} from "./WebSocket.js"
 import {RealtimeGenerator} from "./realtimeGenerator.js";
-
-import {checkURL,render} from "./coxlsx.js"
-
+import {Transformator} from "./dataTransformation.js"
+import {checkURL,csvRead} from "./coxlsx.js"
+/*
 
 describe('Tests for methods createBtnDiv', function() {
     var div = document.createElement('div');
@@ -401,9 +400,15 @@ describe("Tests for checkUrl",function () {
     });
 })
 
-
-
-it('checkUrl should return the csv contentType and status 200 of url', async () => {
-    const data =  await render("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv","divId")
-    console.log("data ",data)
-});
+*/
+describe("a",function () {
+    it('Test Test', async () => {
+        const json = {
+            contentType: "application/xml",
+            status: 403
+        }
+        const data = await csvRead("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv").then(function (dat) {
+            console.log("data ",dat.columns)
+        })
+    });
+})
