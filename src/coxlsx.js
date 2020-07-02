@@ -41,7 +41,6 @@ function render(file, divId) {
             if (data.status !== 404){
                 if (data.contentType.includes("csv")){
                     transformator.csvFromFileToTable()
-
                 }
                 else if (data.contentType.includes("excel")){
                     transformator.xlxsReadFile()
@@ -59,5 +58,8 @@ function render(file, divId) {
     );
 
 }
-
+export function csvRead(file) {
+    const response =  d3.csv(file)
+    return response
+}
 export {render,webSocket}
