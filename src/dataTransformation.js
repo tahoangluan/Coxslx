@@ -16,18 +16,12 @@ export class Transformator {
         let workbookArray = excelResult.workbookArray
 
         createAndModifyDivs(divId, newSheetNames)
-        var defaultSheetname = workbookArray.SheetNames[0]
-        var defaultworksheet = workbookArray.Sheets[defaultSheetname];
-
-        var defaultSheet = XLSX.utils.sheet_to_json(defaultworksheet, {raw: true, defval: ""})
+        var defaultSheet = sheetToJson(0,workbookArray)
         let defaultExcelDiagramm = new ChartCreator()
         defaultExcelDiagramm.visualization(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", buttonDiv)
         for (let i = 0; i < newSheetNames.length; i++) {
             document.getElementById("btn_" + newSheetNames[i]).onclick = function () {
-                var newsheetname = workbookArray.SheetNames[i]
-                var newworksheet = workbookArray.Sheets[newsheetname];
-
-                var newarray = XLSX.utils.sheet_to_json(newworksheet, {raw: true, defval: ""})
+                var newarray = sheetToJson(i,workbookArray)
                 $("#showSheet").empty();
                 let sheetExcelDiagramm = new ChartCreator()
                 sheetExcelDiagramm.visualization(newarray, Object.keys(newarray[0]), "showSheet", buttonDiv)
@@ -75,4 +69,11 @@ function getWorkbook(data) {
         workbookArray:workbookArray,
         sheetname: newSheetNames
     }
+}
+
+function sheetToJson(index,workbookArray) {
+    var sheetName = workbookArray.SheetNames[index]
+    var sheet = workbookArray.Sheets[sheetName];
+    var sheetToJson = XLSX.utils.sheet_to_json(sheet, {raw: true, defval: ""})
+    return sheetToJson
 }

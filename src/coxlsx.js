@@ -28,7 +28,6 @@ async function checkURL(url)
     let response = await fetch(url);
 
     let data = await response.arrayBuffer().then(arrayBuffer => {
-        console.log("reponse ",response)
         return {
             contentType: response.headers.get("Content-Type"),
             status: response.status,
