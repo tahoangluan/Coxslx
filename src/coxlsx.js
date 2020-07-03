@@ -28,10 +28,13 @@ const fetch = require("node-fetch");
 export async function checkURL(url)
 {
     let response = await fetch(url);
-    let data = await response.blob().then(blob => {
+
+    let data = await response.arrayBuffer().then(arrayBuffer => {
         return {
             contentType: response.headers.get("Content-Type"),
-            status: response.status
+            status: response.status,
+            arrayBuffer:arrayBuffer,
+            statusText:response.statusText
         }})
     return data;
 }
@@ -41,29 +44,31 @@ function render(file, divId) {
     let transformator = new Transformator(file, divId, buttonDiv)
     checkURL(file).then(data => {
             if (data.status !== 404){
-                if (data.contentType.includes("csv")){
+                if (data.contentType.includes("csv")||
+                    data.contentType.includes("tab-separated")
+                    ||file.endsWith(".csv")||file.endsWith(".tsv")){
                     transformator.csvFromFileToTable()
                 }
-                else if (data.contentType.includes("excel")){
-                    transformator.xlxsReadFile()
+                else if (data.contentType.includes("excel")||
+                    data.contentType.includes("spreadsheet")||
+                    file.endsWith(".ods")||file.endsWith(".xlsx")||file.endsWith(".xls")){
+
+                    transformator.xlxsReadFile(data.arrayBuffer)
                 }
                 else {
-                    console.log("Not Support")
                     errorHTML(divId, "File type not supported!",
                         "You are trying to render a file type that is not supported. " +
                         "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
             }
             else {
-                errorHTML(divId, "File not found!",
-                    "File not found!")
+                console.log("Not Support")
+                errorHTML(divId, data.status + " "+data.statusText,
+                    "You are trying to render a file whose content could not be read. " +
+                    "Please make sure your file is still accessible or exists.")
             }
         }
     );
 
-}
-export function csvRead(file) {
-    const response =  d3.csv(file)
-    return response
 }
 
 export {render,webSocket}

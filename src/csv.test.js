@@ -3,6 +3,7 @@ let d3 = require("d3")
 let XLSX = require("xlsx")
 const $ = require('jquery');
 import "isomorphic-fetch"
+import {checkURL} from "./coxlsx";
 
 describe("return csv data after reading",function () {
     const columns =["Country","Value"]
@@ -65,10 +66,10 @@ describe("return csv data after reading",function () {
     it('Return 404 Not Found because the url is wrong', async () => {
         const data = await  csvRead("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_headeasasdasr.csv")
             .then(function (data) {
-                console.log("data",data)
             }).catch(function (error) {
                 expect(error.toString()).toContain("404 Not Found")
             })
         expect(data).toBeFalsy()
     });
 })
+

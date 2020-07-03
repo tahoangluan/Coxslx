@@ -1,3 +1,5 @@
+import {checkURL} from "./coxlsx";
+
 let d3 = require("d3")
 let XLSX = require("xlsx")
 let fs = require("fs")
@@ -7,7 +9,6 @@ import "isomorphic-fetch"
 import {webSocket} from "./WebSocket.js"
 import {RealtimeGenerator} from "./realtimeGenerator.js";
 import {Transformator,csvRead} from "./dataTransformation.js"
-import {checkURL} from "./coxlsx.js"
 
 describe('Tests for methods createBtnDiv', function() {
     var div = document.createElement('div');
@@ -76,40 +77,7 @@ describe('Tests for methods createDiv', function() {
         expect(button.id).toBe("btn_Sheet1")
     })
 });
-function createCORSRequest(method, url) {
-    var xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.responseType = "arraybuffer";
-        var data1 = new Uint8Array(xhr.response)
-        var workbookArray = XLSX.read(data1, {type: "array"});
-        var sheetName = workbookArray.SheetNames
-        var worksheet = workbookArray.Sheets[sheetName];
-        xhr.send()
 
-    createAndModifyDivs("createAndModifyDivs",worksheet)
-    test("Sheet html exists",function () {
-        expect(d3.select("#showSheet").empty()).toBe(false)
-    })
-    test("Get style of sheet",function () {
-        expect(d3.select("#showSheet").attr("style")).toBe("display: flex;")
-    })
-    test("Button of sheet exits",function () {
-        expect(d3.select("#sheetsDiv").empty()).toBe( false)
-    })
-    test("Button of sheet",function () {
-        expect(d3.select("#sheetsDiv").attr("style")).toBe("display: flex; flex-wrap: wrap; justify-content: center; margin-top: 10px;")
-    })
-
-}
-describe('Tests for methods createAndModifyDivs', function() {
-    var div = document.createElement('div');
-    div.id = "createAndModifyDivs"
-    document.body.appendChild(div)
-    const viewText = async () => {
-      await createCORSRequest("GET","src/TestFiles/Example.xlsx")
-    };
-    viewText()
-});
 jest.mock("./realtimeGenerator");
 describe("Tests for realtime data visualization",function () {
     beforeEach(() => {
@@ -350,51 +318,40 @@ describe("Tests for table creation",function () {
 
 })
 describe("Tests for checkUrl",function () {
-
     it('checkUrl should return the csv contentType and status 200 of url', async () => {
-        const json = {
-            contentType: "application/x-csv",
-            status: 200
-        }
         const data =  await checkURL("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv").then(da => {
-            expect(da).toEqual(json);
+            expect(da.contentType).toEqual("application/x-csv");
+            expect(da.status).toEqual(200);
+            expect(da.statusText).toEqual("OK");
         })
     });
     it('checkUrl should return the Excel contentType and status 200 of url with xls-Extension', async () => {
-        const json = {
-            contentType: "application/vnd.ms-excel",
-            status: 200
-        }
         const data =  await checkURL("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLS_10.xls").then(da => {
-            expect(da).toEqual(json);
+            expect(da.contentType).toEqual("application/vnd.ms-excel");
+            expect(da.status).toEqual(200);
+            expect(da.statusText).toEqual("OK");
         })
     });
     it('checkUrl should return the Excel contentType and status 200 of url with xlsx-Extension', async () => {
-        const json = {
-            contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            status: 200
-        }
         const data =  await checkURL("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLSX_10.xlsx").then(da => {
-            expect(da).toEqual(json);
+            expect(da.contentType).toEqual("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            expect(da.status).toEqual(200);
+            expect(da.statusText).toEqual("OK");
         })
     });
     it('checkUrl should return the Excel contentType and status 200 of url with ods-Extension', async () => {
-        const json = {
-            contentType: "application/vnd.oasis.opendocument.spreadsheet",
-            status: 200
-        }
         const data =  await checkURL("https://example-files.online-convert.com/spreadsheet/ods/example.ods").then(da => {
-            expect(da).toEqual(json);
+            expect(da.contentType).toEqual("application/vnd.oasis.opendocument.spreadsheet");
+            expect(da.status).toEqual(200);
+            expect(da.statusText).toEqual("OK");
         })
     });
 
     it('checkUrl should return the wrong contentType and status of url', async () => {
-        const json = {
-            contentType: "application/xml",
-            status: 403
-        }
         const data =  await checkURL("http://samplecsvs.s3.amazonaws.com/Wrong.csv").then(da => {
-            expect(da).toEqual(json);
+            expect(da.contentType).toEqual("application/xml");
+            expect(da.status).toEqual(403);
+            expect(da.statusText).toEqual("Forbidden");
         })
     });
 })
