@@ -26,11 +26,17 @@ includeCss('/node_modules/bootstrap/dist/css/bootstrap.min.css', "bootstrapCss")
 async function checkURL(url)
 {
     let response = await fetch(url);
-    let data = await response.blob().then(blob => {
+
+    let data = await response.arrayBuffer().then(arrayBuffer => {
+        console.log("reponse ",response)
         return {
             contentType: response.headers.get("Content-Type"),
-            status: response.status
+            status: response.status,
+            arrayBuffer:arrayBuffer,
+            statusText:response.statusText
         }})
+
+
     return data;
 }
 
@@ -47,7 +53,8 @@ function render(file, divId) {
             else if (data.contentType.includes("excel")||
                 data.contentType.includes("spreadsheet")||
                 file.endsWith(".ods")||file.endsWith(".xlsx")||file.endsWith(".xls")){
-                transformator.xlxsReadFile()
+
+                transformator.xlxsReadFile(data.arrayBuffer)
             }
             else {
                 console.log("Not Support")
@@ -56,14 +63,14 @@ function render(file, divId) {
                     "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
         }
             else {
-                return "fileNotFound"
-            }
+            console.log("Not Support")
+            errorHTML(divId, data.status + " "+data.statusText,
+                "You are trying to render a file whose content could not be read. " +
+                "Please make sure your file is still accessible or exists.")
+        }
         }
     );
 
 }
-export function csvRead(file) {
-    const response =  d3.csv(file)
-    return response
-}
+
 export {render,webSocket}
