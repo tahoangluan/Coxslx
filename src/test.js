@@ -3,14 +3,19 @@ import {checkURL} from "./coxlsx";
 let d3 = require("d3")
 let XLSX = require("xlsx")
 let fs = require("fs")
-import {createBtnDiv, errorHTML,createAndModifyDivs,createDiv,Grid} from "./dataVisualization"
+import {createBtnDiv, errorHTML,createDiv,Grid} from "./dataVisualization"
 const $ = require('jquery');
 import "isomorphic-fetch"
 import {webSocket} from "./WebSocket.js"
 import {RealtimeGenerator} from "./realtimeGenerator.js";
 import {Transformator,csvRead} from "./dataTransformation.js"
 
-describe('Tests for methods createBtnDiv', function() {
+/*
+* Testen, ob die Methode createBtnDiv funktioniert wie erwartet
+* und zwar, ob die Button für Grid und Graph
+* und deren Eigenschaften z.B. style, class richtig erstellt wurden
+* */
+describe('Tests for method createBtnDiv', function() {
     var div = document.createElement('div');
     div.id = "createBtnDiv"
     document.body.appendChild(div)
@@ -52,6 +57,12 @@ describe('Tests for methods createBtnDiv', function() {
     });
 
 });
+
+/*
+* Testen, ob die Methode errorHTML funktioniert wie erwartet
+* und zwar ob die Nachrichten korrekt ausgeworfen und
+* ob die Eigenschaften von dem div-container richtig erstellt wurden.
+* */
 describe('Tests for methods errorHTML', function() {
     var div = document.createElement('div');
     div.id = "errorHTML"
@@ -71,13 +82,22 @@ describe('Tests for methods errorHTML', function() {
         expect(d3.select("#errorHTML").select("div").select("p").text()).toBe("Text of p-Element");
     });
 });
-describe('Tests for methods createDiv', function() {
+
+/*
+* Testen, ob die Methode createDiv funktioniert wie erwartet
+* indem man die id vom div-container testet
+* */
+describe('Tests for method createDiv', function() {
     let button = createDiv("Sheet1",1)
     test("Sheet Button id",function () {
         expect(button.id).toBe("btn_Sheet1")
     })
 });
 
+/*https://jestjs.io/docs/en/bypassing-module-mocks
+* aufruf von jest.mock('./realtimeGenerator') gibt "automatic mock" zurück,
+* was verwendet wird, um die Aufrufe vom Kontruktor und dessen Methode auszusponieren.
+* */
 jest.mock("./realtimeGenerator");
 describe("Tests for realtime data visualization",function () {
     beforeEach(() => {
@@ -86,6 +106,9 @@ describe("Tests for realtime data visualization",function () {
     var div = document.createElement('div');
     div.id = "realTimeDiv"
     document.body.appendChild(div)
+    /*Die Methode WebSocket ruft den Konstruktor von RealtimeGenerator auf
+       Testen, wie viele Mal der Konstruktor aufgerufen wird,
+       * */
     it('check if the consumer called the class constructor', () => {
         expect(RealtimeGenerator).toHaveBeenCalledTimes(0);
         webSocket("ws://datastore.k2dev.fokus.fraunhofer.de/datastream/OpenData.SmartCity.Environment",1000,"realTimeDiv")
@@ -93,9 +116,7 @@ describe("Tests for realtime data visualization",function () {
     });
     it('check if the consumer called a method on the class instance 1', () => {
         expect(RealtimeGenerator).not.toHaveBeenCalled();
-
         webSocket("ws://datastore.k2dev.fokus.fraunhofer.de/datastream/OpenData.SmartCity.Environment",1000,"realTimeDiv")
-
         expect(RealtimeGenerator).toHaveBeenCalledTimes(1);
 
         // mock.instances is available with automatic mocks:
@@ -133,7 +154,16 @@ describe("Tests for realtime data visualization",function () {
         expect(reltime).toBeTruthy();
     });
 })
+
+/*https://jestjs.io/docs/en/bypassing-module-mocks
+* aufruf von jest.mock('./realtimeGenerator') gibt "automatic mock" zurück,
+* was verwendet wird, um die Aufrufe vom Kontruktor und dessen Methode auszusponieren.
+* */
 jest.mock("./dataTransformation");
+/*
+* Testen mit Hilfe von mock, ob Transformator und dessen Methode sowie Konstruktor
+* richtig aufgerufen werden wie erwartet.
+* */
 describe("Tests for data transformation",function () {
     jest.clearAllMocks()
     beforeEach(() => {
@@ -145,6 +175,7 @@ describe("Tests for data transformation",function () {
     let buttonDiv = createBtnDiv("createBtnDiv")
 
     it('check if the consumer called the class constructor', () => {
+        expect(Transformator).toHaveBeenCalledTimes(0);
         let transformator = new Transformator(
             "src/TestFiles/steuereinnahmen_bis_september_2013.ods",
             "createBtnDiv",buttonDiv)
@@ -210,6 +241,12 @@ describe("Tests for data transformation",function () {
     });
 
 })
+
+/*
+* Testen, ob die Tabelle richtig erstellt wird wie gewünscht.
+* Dafür werden alle Spalten getestet, ob die erstellt wurden,
+* deren values, Eigenschaften z.B. style, die Hide-Columns-button... den Headers der Datei identifizieren.
+* */
 describe("Tests for table creation",function () {
     var input = "id,altersgruppe,fallzahl,differenz,inzidenz\n" +
         "3,0-4,77,3,40.6\n" +
@@ -224,9 +261,11 @@ describe("Tests for table creation",function () {
     let table = grid.gridVisualization(input,headers,"gridTable")
     test("Table was created ",function () {
         expect(d3.select("#tblVis").empty()).toBe(false)
+        expect(d3.select("#tblVis")).toBeTruthy()
     })
     test("Column id was created ",function () {
         expect(d3.select("#th_id").empty()).toBe(false)
+        expect(d3.select("#th_id")).toBeTruthy()
     })
     test("Return text of column id ",function () {
         expect(d3.select("#th_id").text()).toBe("id")
@@ -317,6 +356,15 @@ describe("Tests for table creation",function () {
     })
 
 })
+
+/*
+* CheckUrl ist einer der wichtigsten Methode der Bibliothek,
+* sie checkt, ob eine angegebene URL noch gültig ist oder
+* die akzeptabelen Formaten enthalten.
+* Hier werden sie getestet, wie sie die richtige Informationen z.B. status, contentType,statusText
+*  zurückgibt wie erwartet, wenn sie
+* eine gültige Csv-Url, die Excel-Urls und eine ungültige Url bekommt.
+* */
 describe("Tests for checkUrl",function () {
     it('checkUrl should return the csv contentType and status 200 of url', async () => {
         const data =  await checkURL("http://samplecsvs.s3.amazonaws.com/Sacramentorealestatetransactions.csv").then(da => {

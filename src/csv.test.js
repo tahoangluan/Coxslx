@@ -5,6 +5,13 @@ const $ = require('jquery');
 import "isomorphic-fetch"
 import {checkURL} from "./coxlsx";
 
+/*
+* Testen, wie das Programm reagiert, wenn es eine csv-datei liest
+* @Input: https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv
+* return 404 wenn die Url falsch ist,
+* return die richtige Daten
+* return die Spalten der Datei und zwar hier : ["Country","Value"]
+* */
 describe("return csv data after reading",function () {
     const columns =["Country","Value"]
     it('Return columns', async () => {
