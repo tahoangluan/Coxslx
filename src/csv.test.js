@@ -21,54 +21,17 @@ describe("return csv data after reading", function () {
                 expect(dat.columns).toEqual(columns);
             })
     });
-    let data = [
+    let data =
         {
             Country: "United States",
             Value: "12394",
-        },
-        {
-            Country: "Russia",
-            Value: "6148",
-        },
-        {
-            Country: "Germany (FRG)",
-            Value: "1653",
-        },
-        {
-            Country: "France",
-            Value: "2162",
-        },
-        {
-            Country: "United Kingdom",
-            Value: "1214",
-        },
-        {
-            Country: "China",
-            Value: "1131",
-        },
-        {
-            Country: "Spain",
-            Value: "814",
-        },
-        {
-            Country: "Netherlands",
-            Value: "1167",
-        },
-        {
-            Country: "Italy",
-            Value: "660",
-        },
-        {
-            Country: "Israel",
-            Value: "1263",
-        },
-    ]
+        }
     it('Return data', async () => {
         await csvRead("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv")
             .then(function (dat) {
                 let arr = Array.from(dat)
-                let arr2 = Array.from(data)
-                expect(arr).toEqual(arr2);
+
+                expect(arr[0]).toEqual(data);
             })
     });
     it('Return 404 Not Found because the url is wrong', async () => {
