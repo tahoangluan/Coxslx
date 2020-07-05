@@ -1,4 +1,5 @@
 import {csvRead} from "./dataTransformation";
+
 let d3 = require("d3")
 let XLSX = require("xlsx")
 const $ = require('jquery');
@@ -12,8 +13,8 @@ import {checkURL} from "./coxlsx";
 * return die richtige Daten
 * return die Spalten der Datei und zwar hier : ["Country","Value"]
 * */
-describe("return csv data after reading",function () {
-    const columns =["Country","Value"]
+describe("return csv data after reading", function () {
+    const columns = ["Country", "Value"]
     it('Return columns', async () => {
         const data = await csvRead("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv")
             .then(function (dat) {
@@ -71,7 +72,7 @@ describe("return csv data after reading",function () {
             })
     });
     it('Return 404 Not Found because the url is wrong', async () => {
-        const data = await  csvRead("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_headeasasdasr.csv")
+        const data = await csvRead("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_headeasasdasr.csv")
             .then(function (data) {
             }).catch(function (error) {
                 expect(error.toString()).toContain("404 Not Found")
