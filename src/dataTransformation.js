@@ -1,5 +1,9 @@
-import {ChartCreator, createAndModifyDivs, errorHTML} from "/src/dataVisualization.js";
-
+import {ChartCreator, createAndModifyDivs, errorHTML} from "./dataVisualization.js";
+import "./main.css"
+const d3 = require("d3")
+const $ = require("jquery")
+require("bootstrap")
+/* eslint-disable */
 export class Transformator {
     constructor(file,divId,buttonDiv) {
         this.file=file
@@ -22,6 +26,7 @@ export class Transformator {
         for (let i = 0; i < newSheetNames.length; i++) {
             document.getElementById("btn_" + newSheetNames[i]).onclick = function () {
                 var newarray = sheetToJson(i,workbookArray)
+                // eslint-disable-next-line no-undef
                 $("#showSheet").empty();
                 let sheetExcelDiagramm = new ChartCreator()
                 sheetExcelDiagramm.visualization(newarray, Object.keys(newarray[0]), "showSheet", buttonDiv)
@@ -48,11 +53,13 @@ export class Transformator {
     }
 }
 export function csvRead(file) {
+    // eslint-disable-next-line no-undef
     const response =  d3.csv(file)
     return response
 }
 
 function getWorkbook(data) {
+    // eslint-disable-next-line no-undef
     var workbookArray = XLSX.read(data, {type: "array"});
     for (let i = 0; i < workbookArray.SheetNames.length; i++) {
         var sheetname = workbookArray.SheetNames[i]
@@ -74,6 +81,7 @@ function getWorkbook(data) {
 function sheetToJson(index,workbookArray) {
     var sheetName = workbookArray.SheetNames[index]
     var sheet = workbookArray.Sheets[sheetName];
+    // eslint-disable-next-line no-undef
     var sheetToJson = XLSX.utils.sheet_to_json(sheet, {raw: true, defval: ""})
     return sheetToJson
 }

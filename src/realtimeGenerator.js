@@ -1,4 +1,7 @@
-import {realTimeChartRender} from "/src/realtimeDataVisualization.js"
+import {realTimeChartRender} from "./realtimeDataVisualization.js"
+/* eslint-disable */
+
+const d3 = require("d3")
 export class RealtimeGenerator {
     constructor(divId) {
         this.divId = divId
@@ -7,6 +10,7 @@ export class RealtimeGenerator {
         let divId = this.divId
         var chart = realTimeChartRender()
 
+        // eslint-disable-next-line no-undef
         d3.select("#"+divId).append("div")
             .attr("id", "chartDiv")
             .call(chart);
@@ -15,10 +19,12 @@ export class RealtimeGenerator {
         return chart
     }
     dataGenerator(data, chart) {
+        // eslint-disable-next-line no-undef
         var timeScale = d3.scaleLinear()
             .domain([4000, 18000])
             .range([4000, 18000])
             .clamp(true);
+        // eslint-disable-next-line no-undef
         var normal = d3.randomNormal(10000, 2000);
         var timeout = Math.round(timeScale(normal()));
         setTimeout(function() {
@@ -39,10 +45,4 @@ export class RealtimeGenerator {
             new RealtimeGenerator().dataGenerator();
         }, timeout);
     }
-
-    timeScale(normal) {
-        return 0;
-    }
 }
-
-

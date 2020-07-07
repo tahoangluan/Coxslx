@@ -1,3 +1,8 @@
+import "./main.css"
+require("bootstrap")
+const d3 = require("d3")
+const $ = require("jquery")
+/* eslint-disable */
 export class Helper {
     wrap(text, width) {
         text.each(function () {
@@ -92,6 +97,7 @@ class Grid {
             .attr("data-toggle", "tooltip")
             .attr("title", "Hide Column")
             .append("i").on("click", function (d) {
+            // eslint-disable-next-line no-undef
             let $el = $(this);
             let $cell = $el.closest('th,td')
             let $table = $cell.closest('table')
@@ -137,6 +143,7 @@ class Grid {
             .attr("class", "restore-columns")
             .attr("href", "#").text("Some columns hidden - click to show all");
 
+        // eslint-disable-next-line no-undef
         $(".restore-columns").click(function (e) {
             var $table = $(this).closest('table')
             $table.find(".footerRestoreColumn").hide()
@@ -708,12 +715,14 @@ class Generator{
         });
         document.getElementById("divToVis").innerHTML = ""
         $('#BarChartModal').modal('hide');
+        $('.modal-backdrop').remove();
         new Graph().barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
     }
     generateCC(nbins, input,headers) {
         let xAxisConnectedChartSelect = d3.select("#xAxisConnectedChartSelect").node().value;
         document.getElementById("divToVis").innerHTML = ""
         $('#ConnectedChartModal').modal('hide');
+        $('.modal-backdrop').remove();
         new Graph().updateConnectedChartByBins(nbins, headers, "divToVis", xAxisConnectedChartSelect, input)
     }
 }
@@ -855,4 +864,3 @@ export function createBtnDiv(divId) {
         })
     return buttonDiv
 }
-

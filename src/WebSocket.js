@@ -1,5 +1,5 @@
-import {RealtimeGenerator} from "/src/realtimeGenerator.js";
-
+import {RealtimeGenerator} from "../src/realtimeGenerator.js";
+/* eslint-disable */
 export function webSocket(url, timeout, divId) {
     let realtimeGenerator = new RealtimeGenerator(divId)
     let chart = realtimeGenerator.divGenerator()

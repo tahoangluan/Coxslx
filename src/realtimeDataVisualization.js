@@ -1,4 +1,6 @@
 import {Helper} from "./dataVisualization.js"
+const d3 = require("d3")
+/* eslint-disable */
 export function realTimeChartRender() {
     var datum, data,
         barId = 0,
@@ -80,22 +82,28 @@ export function realTimeChartRender() {
                     return "bar-" + barId++;
                 });
             var Tooltip = new Helper().tooltipFunction("viewDiv")
+            // eslint-disable-next-line no-unused-vars
             var mouseover = function (d) {
                 Tooltip
                     .style("opacity", 1)
             }
+            // eslint-disable-next-line no-unused-vars
             var mousemove = function (d) {
                 Tooltip
                     .html("Beschreibung hier")
+                    // eslint-disable-next-line no-undef
                     .style("top", (d3.event.pageY + 10) + "px")
+                    // eslint-disable-next-line no-undef
                     .style("left", (d3.event.pageX + 10) + "px");
             }
+            // eslint-disable-next-line no-unused-vars
             var mouseleave = function (d) {
                 Tooltip
                     .style("opacity", 0)
             }
             viewPoint
                 .attr("cx", function(d) { return Math.round(x(d.time-1000));})
+                // eslint-disable-next-line no-unused-vars
                 .attr("cy", function(d) {return height/2;})
                 .attr("r", function(d) {return d.size / 2;})
                 .style("fill", function(d) { return d.color || "black"; })
