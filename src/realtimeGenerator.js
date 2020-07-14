@@ -1,4 +1,4 @@
-import {realTimeChartRender} from "./realtimeDataVisualization.js"
+import {ChartCreator} from "./dataVisualization.js"
 /* eslint-disable */
 
 const d3 = require("d3")
@@ -8,14 +8,11 @@ export class RealtimeGenerator {
     }
     divGenerator(){
         let divId = this.divId
-        var chart = realTimeChartRender()
-
+        var chart = new ChartCreator().realTimeChartRender()
         // eslint-disable-next-line no-undef
         d3.select("#"+divId).append("div")
             .attr("id", "chartDiv")
             .call(chart);
-
-
         return chart
     }
     dataGenerator(data, chart) {

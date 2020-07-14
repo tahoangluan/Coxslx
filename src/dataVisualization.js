@@ -812,6 +812,170 @@ export class ChartCreator{
             }
         });
     }
+    realTimeChartRender() {
+        var datum, data,
+            barId = 0,
+            xAxisG,
+            xAxis, yAxis
+
+        var chart = function (s) {
+            let height = 200;
+            let width = $("#chartDiv").width() - 200;
+            let margin = {top: 20, bottom: 20, left: 100, right: 30}
+            let svg = s.append("svg")
+                .attr("width", "100%")
+                .attr("height", 400)
+
+            var main = svg.append("g")
+                .attr("transform", "translate (" + margin.left + "," + margin.top + ")");
+
+            main.append("defs").append("clipPath")
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", width)
+                .attr("height", height);
+            let deadPoint = 100
+            var filter = svg.append("defs")
+                .append("filter")
+                .attr("id", "blur")
+                .append("feGaussianBlur")
+                .attr("stdDeviation", 1);
+            let livearea = main.append("rect")
+                .attr("x", deadPoint)
+                .attr("y", 0)
+                .attr("width", width - deadPoint)
+                .attr("height", height)
+                .attr("style", "stroke: black;")
+                .style("fill", "rgb(231, 228, 228)")
+                .style("stroke-dasharray", "2280").attr("filter", "url(#blur)")
+
+            let deadArea = main.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", deadPoint)
+                .attr("height", height)
+                .attr("style", "stroke: black;")
+                .style("fill", "rgb(227, 224, 224)")
+                .style("stroke-dasharray", "101, 198, 300")
+            deadArea.attr("filter", "url(#blur)");
+
+            var barG = main.append("g")
+                .attr("class", "barGroup")
+                .attr("transform", "translate(0, 0)")
+                .append("g");
+
+            xAxisG = main.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")");
+
+            main.append("g")
+                .attr("class", "y axis");
+            let x = d3.scaleTime().range([0, width]);
+
+            xAxis = d3.axisBottom().scale(x).tickSize(0);
+            yAxis = d3.axisLeft();
+
+            var endTime = new Date(new Date().getTime());
+            var startTime = new Date(endTime.getTime() - 20000);
+
+            data = [];
+            update();
+            var Tooltip = new Helper().tooltipFunction("chartDiv")
+
+            var mouseover = function (d) {
+                Tooltip
+                    .style("opacity", 1)
+            }
+
+            var mousemove = function (d) {
+
+                Tooltip
+                    .html("Beschreibung hier")
+
+                    .style("top", (height/2) + "px")
+
+                    .style("left", (Math.round(x(d.time - 1000)) + 100) + "px");
+            }
+
+            var mouseleave = function (d) {
+                Tooltip
+                    .style("opacity", 0)
+            }
+            var viewPoint
+            function update() {
+
+                data = data.filter(function (d) {
+                    if (d.time.getTime() > startTime.getTime()) return true;
+                })
+
+                viewPoint = barG.selectAll(".bar")
+                    .data(data);
+                viewPoint.exit().remove();
+
+                viewPoint.enter()
+                    .append(function (d) {
+                        var type = d.type || "circle";
+                        var node = document.createElementNS("http://www.w3.org/2000/svg", type);
+                        return node;
+                    })
+                    .attr("class", "bar")
+                    .attr("id", function () {
+                        return "bar-" + barId++;
+                    });
+
+                viewPoint
+                    .attr("cx", function (d) {
+                        if (Math.round(x(d.time - 1000)) > 50) {
+                            return Math.round(x(d.time - 1000));
+                        } else {
+                            return 50;
+                        }
+                    })
+                    .attr("cy", function (d) {
+                        return height / 2;
+                    })
+                    .attr("r", function (d) {
+                        return d.size / 2;
+                    })
+                    .style("fill", function (d) {
+                        return d.color || "black";
+                    })
+                    .style("fill-opacity", function (d) {
+                        return d.opacity || 1;
+                    })
+                viewPoint.on("mouseover", mouseover)
+                    .on("mousemove", mousemove)
+                    .on("mouseleave", mouseleave)
+                viewPoint.attr("filter",function (d) {
+                    if (Math.round(x(d.time - 1000)) < deadPoint){
+                        return "url(#blur)"
+                    }
+                })
+
+
+            }
+
+            setInterval(function () {
+                endTime = new Date();
+                startTime = new Date(endTime.getTime() - 150000);
+                x.domain([startTime, endTime]);
+                xAxis.scale(x)(xAxisG);
+                update();
+            }, 200)
+
+            return chart;
+        }
+
+
+        chart.render = function (e) {
+            if (arguments.length == 0) return datum;
+            datum = e;
+            data.push(datum);
+            return chart;
+        }
+        return chart;
+    }
 }
 export function errorHTML(divId, headerErrorText, text2) {
     document.getElementById(divId).innerHTML = ""
