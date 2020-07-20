@@ -828,7 +828,7 @@ export class ChartCreator{
 
             var main = svg.append("g")
                 .attr("transform", "translate (" + margin.left + "," + margin.top + ")");
-
+            main.append("rect")
             main.append("defs").append("clipPath")
                 .append("rect")
                 .attr("x", 0)
@@ -847,18 +847,29 @@ export class ChartCreator{
                 .attr("width", width - deadPoint)
                 .attr("height", height)
                 .attr("style", "stroke: black;")
-                .style("fill", "rgb(231, 228, 228)")
-                .style("stroke-dasharray", "2280").attr("filter", "url(#blur)")
-
+                .style("fill", "rgba(0,0,0,.4)")
+                .style("stroke-dasharray", "2280")
+              //.attr("filter", "url(#blur)")
+          function lineCreator(container, point, height){
+              container.append('line').attr("id","line_at_"+point)
+                .attr('x1', point)
+                .attr('y1', 0)
+                .attr('x2', point)
+                .attr('y2', height)
+                .style("stroke-width", 0.5)
+                .style("stroke", "white")
+                .style("fill", "none");
+          }
+            lineCreator(main, deadPoint, height)
             let deadArea = main.append("rect")
                 .attr("x", 0)
                 .attr("y", 0)
                 .attr("width", deadPoint)
                 .attr("height", height)
                 .attr("style", "stroke: black;")
-                .style("fill", "rgb(227, 224, 224)")
+                .style("fill", "rgba(0,0,0,.4)")
                 .style("stroke-dasharray", "101, 198, 300")
-            deadArea.attr("filter", "url(#blur)");
+            //deadArea.attr("filter", "url(#blur)");
 
             var barG = main.append("g")
                 .attr("class", "barGroup")
@@ -889,13 +900,19 @@ export class ChartCreator{
             }
 
             var mousemove = function (d) {
+              let jsonData = JSON.parse(d.description)
+              let keys = Object.keys(jsonData)
 
+              let description = ""
+              for (let key in keys){
+                description = description+ keys[key]+ ": "+jsonData[keys[key]]+"<br>"
+              }
                 Tooltip
-                    .html("Beschreibung hier")
+                    .html(d.description)
 
-                    .style("top", (height/2) + "px")
+                    .style("top", (height/3) + "px")
 
-                    .style("left", (Math.round(x(d.time - 1000)) + 100) + "px");
+                    .style("left", (Math.round(x(d.time - 1000)) + 120) + "px");
             }
 
             var mouseleave = function (d) {
@@ -903,7 +920,8 @@ export class ChartCreator{
                     .style("opacity", 0)
             }
             var viewPoint
-            function update() {
+          let randomStop = Math.floor((Math.random() * deadPoint) + 1)
+          function update() {
 
                 data = data.filter(function (d) {
                     if (d.time.getTime() > startTime.getTime()) return true;
@@ -923,17 +941,16 @@ export class ChartCreator{
                     .attr("id", function () {
                         return "bar-" + barId++;
                     });
-
                 viewPoint
                     .attr("cx", function (d) {
-                        if (Math.round(x(d.time - 1000)) > 50) {
+                        if (Math.round(x(d.time - 1000)) > randomStop) {
                             return Math.round(x(d.time - 1000));
                         } else {
-                            return 50;
+                            return randomStop
                         }
                     })
                     .attr("cy", function (d) {
-                        return height / 2;
+                        return height / d.position;
                     })
                     .attr("r", function (d) {
                         return d.size / 2;
@@ -943,10 +960,10 @@ export class ChartCreator{
                     })
                     .style("fill-opacity", function (d) {
                         return d.opacity || 1;
-                    })
-                viewPoint.on("mouseover", mouseover)
+                    }).on("mouseover", mouseover)
                     .on("mousemove", mousemove)
                     .on("mouseleave", mouseleave)
+
                 viewPoint.attr("filter",function (d) {
                     if (Math.round(x(d.time - 1000)) < deadPoint){
                         return "url(#blur)"
