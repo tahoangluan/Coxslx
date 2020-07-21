@@ -6,7 +6,11 @@ require("bootstrap")
 /* eslint-disable */
 async function checkURL(url)
 {
-    let response = await fetch(url);
+    var headers = {
+      "Accept":"text/csv"
+    }
+    let response = await fetch(url,{ method: 'GET', headers: headers});
+
     let data = await response.arrayBuffer().then(arrayBuffer => {
         return {
             contentType: response.headers.get("Content-Type"),
@@ -27,6 +31,7 @@ function render(file, divId) {
                 if (data.contentType.includes("csv")||
                     data.contentType.includes("tab-separated")
                     ||file.endsWith(".csv")||file.endsWith(".tsv")){
+
                     transformator.csvFromFileToTable()
                 }
                 else if (data.contentType.includes("excel")||

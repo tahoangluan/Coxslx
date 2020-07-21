@@ -812,6 +812,218 @@ export class ChartCreator{
             }
         });
     }
+    realTimeChartRender() {
+        var datum, data,
+            barId = 0,
+            xAxisG,
+            xAxis, yAxis
+
+        var chart = function (s) {
+            let height = 150;
+            let width = $("#chartDiv").width() - 100;
+            let margin = {top: 60, bottom: 20, left: 50, right: 30}
+          let streamHeader = s.append("div").attr("id","streamHeader")
+          function streamHeaderCreator(container, h,l, w, t,color,spanText,borderRadius){
+            let header =  container.append("div").attr("id","header_At_"+l)
+              .attr("style",
+                "left:"+l+"px;"+
+                "top:"+t+"px;"+
+                "position:absolute;"+
+                "width:"+w+"px;"+
+                "height:"+h+"px;"+
+                "background:"+color+";"+
+                "border-radius: "+borderRadius+";"+
+                "color: white;"+
+                "text-align: center;")
+              .append("span").text(spanText)
+          }
+          let deadPoint = 240
+          streamHeaderCreator(streamHeader, 30,deadPoint, 50, margin.top+1,"rgba(137,145,161,.9)","-120s","0px 5px 0px 15px;")
+          streamHeaderCreator(streamHeader, 30,width/2+120, 50, margin.top+1,"rgba(137,145,161,.9)","-60s","0px 5px 0px 15px;")
+          streamHeaderCreator(streamHeader, 30,width, 50, margin.top+1,"rgba(137,145,161,.9)","Now","0px 5px 0px 15px;")
+
+            let svg = s.append("svg")
+                .attr("width", "100%")
+                .attr("height", 500)
+
+            var main = svg.append("g")
+                .attr("transform", "translate (" + margin.left + "," + margin.top + ")");
+
+            main.append("defs").append("clipPath")
+                .append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", width)
+                .attr("height", height);
+
+            function filter(container, level){
+              container.append("defs")
+                .append("filter")
+                .attr("id", "blur_"+level)
+                .append("feGaussianBlur")
+                .attr("stdDeviation", level);
+            }
+           filter(svg,0.5)
+           filter(svg,2)
+            let livearea = main.append("rect")
+                .attr("x", deadPoint)
+                .attr("y", 0)
+                .attr("width", width - deadPoint)
+                .attr("height", height)
+                //.attr("style", "stroke: black;")
+                .style("fill", "#9ca9aa")
+                .style("stroke-dasharray", "2280")
+              //.attr("filter", "url(#blur)")
+          function lineCreator(container, point, height, strokeWidth,color){
+              container.append('line').attr("id","line_at_"+point)
+                .attr('x1', point)
+                .attr('y1', 0)
+                .attr('x2', point)
+                .attr('y2', height)
+                .style("stroke-width", strokeWidth)
+                .style("stroke", color)
+                .style("fill", "none");
+          }
+            lineCreator(main, deadPoint, height,0.5,"white")
+            lineCreator(main, width/2+120, height,0.5,"white")
+            lineCreator(main, width-5, height,10,"#a09e9b")
+            let deadArea = main.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", deadPoint)
+                .attr("height", height)
+                //.attr("style", "stroke: black;")
+                .style("fill", "#9ca9aa")
+                .style("stroke-dasharray", "101, 198, 300")
+            deadArea.attr("filter", "url(#blur_0.5)");
+
+            var barG = main.append("g")
+                .attr("class", "barGroup")
+                .attr("transform", "translate(0, 0)")
+                .append("g");
+
+            xAxisG = main.append("g")
+                .attr("class", "x_axis")
+                .attr("transform", "translate(0," + height + ")");
+
+            main.append("g")
+                .attr("class", "y axis");
+            let x = d3.scaleTime().range([0, width]);
+
+            xAxis = d3.axisBottom().scale(x).tickSize(0);
+            yAxis = d3.axisLeft();
+
+            var endTime = new Date(new Date().getTime());
+            var startTime = new Date(endTime.getTime() - 20000);
+
+            data = [];
+            update();
+            var Tooltip = new Helper().tooltipFunction("chartDiv")
+
+            var mouseover = function (d) {
+                Tooltip
+                    .style("opacity", 1)
+            }
+
+            var mousemove = function (d) {
+              let jsonData = JSON.parse(d.description)
+              let keys = Object.keys(jsonData)
+
+              let description = ""
+              for (let key in keys){
+                description = description+ keys[key]+ ": "+jsonData[keys[key]]+"<br>"
+              }
+                Tooltip
+                    .html(d.description)
+
+                    .style("top", (height/d.position) + "px")
+
+                    .style("left", (Math.round(x(d.time - 1000)) + 50) + "px");
+            }
+
+            var mouseleave = function (d) {
+                Tooltip
+                    .style("opacity", 0)
+            }
+            var viewPoint
+          let randomStop = Math.floor((Math.random() * deadPoint) + 1)
+          svg.append("defs")
+            .append("filter")
+            .attr("id", "blur2")
+            .append("feGaussianBlur")
+            .attr("stdDeviation", 2);
+          function update() {
+
+                data = data.filter(function (d) {
+                    if (d.time.getTime() > startTime.getTime()) return true;
+                })
+
+                viewPoint = barG.selectAll(".bar")
+                    .data(data);
+                viewPoint.exit().remove();
+
+                viewPoint.enter()
+                    .append(function (d) {
+                        var type = d.type || "circle";
+                        var node = document.createElementNS("http://www.w3.org/2000/svg", type);
+                        return node;
+                    })
+                    .attr("class", "bar")
+                    .attr("id", function () {
+                        return "bar-" + barId++;
+                    });
+                viewPoint
+                    .attr("cx", function (d) {
+                        if (Math.round(x(d.time - 1000)) > randomStop) {
+                            return Math.round(x(d.time - 1000));
+                        } else {
+                            return randomStop
+                        }
+                    })
+                    .attr("cy", function (d) {
+                        return height / d.position;
+                    })
+                    .attr("r", function (d) {
+                        return d.size / 2;
+                    })
+                    .style("fill", function (d) {
+                        return d.color || "black";
+                    })
+                    .style("fill-opacity", function (d) {
+                        return d.opacity || 1;
+                    }).on("mouseover", mouseover)
+                    .on("mousemove", mousemove)
+                    .on("mouseleave", mouseleave)
+
+                viewPoint.attr("filter",function (d) {
+                    if (Math.round(x(d.time - 1000)) < deadPoint){
+                        return "url(#blur_2)"
+                    }
+                })
+
+
+            }
+
+            setInterval(function () {
+                endTime = new Date();
+                startTime = new Date(endTime.getTime() - 150000);
+                x.domain([startTime, endTime]);
+                xAxis.scale(x)(xAxisG);
+                update();
+            }, 200)
+
+            return chart;
+        }
+
+
+        chart.render = function (e) {
+            if (arguments.length == 0) return datum;
+            datum = e;
+            data.push(datum);
+            return chart;
+        }
+        return chart;
+    }
 }
 export function errorHTML(divId, headerErrorText, text2) {
     document.getElementById(divId).innerHTML = ""

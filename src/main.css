@@ -278,3 +278,7 @@ input[type=number]
 #sheetsDiv button:hover {
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 100px 0 rgba(0,0,0,0.19);
 }
+.x_axis path, .x_axis line {
+    fill: none;
+    stroke: none;
+}
