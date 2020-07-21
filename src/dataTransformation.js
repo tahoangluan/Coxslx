@@ -53,8 +53,10 @@ export class Transformator {
     }
 }
 export function csvRead(file) {
-    // eslint-disable-next-line no-undef
-    const response =  d3.csv(file)
+  var headers = {
+    "Accept":"text/csv"
+  }
+    const response =  d3.csv(file,{ method: 'GET', headers: headers})
     return response
 }
 
