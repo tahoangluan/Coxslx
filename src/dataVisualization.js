@@ -394,10 +394,9 @@ class Graph {
         var margin = {top: 10, right: 30, bottom: 20, left: 50},
             width = 1400 - margin.top - margin.bottom,
             height = 400 - margin.top - margin.bottom;
-
         var svg = d3.select("#" + divId)
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
+            .attr("width", $("#"+divId).width())
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform",
