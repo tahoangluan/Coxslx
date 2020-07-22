@@ -397,7 +397,7 @@ class Graph {
 
         var svg = d3.select("#" + divId)
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
+            .attr("width", $("#"+divId).width())
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform",
