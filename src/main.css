@@ -244,7 +244,34 @@ input[type=number]
     border-radius: 3px 3px 3px 3px;
     height: 37.6px;
 }
+#selectForm {
+    display: flex;
+    align-items: center;
+    border-left: solid 2px #ddd;
+    margin-left: 10px;
+    border-right: solid 2px #ddd;
+}
+#selectForm select {
+    width: 130px;
+    height: 37.6px;
+    display: block;
+    margin: 0;
+    text-align: center;
+    border: 1px solid #007bff;
+    border-radius: 3px 3px 3px 3px;
+    margin-right: 10px;
+    /*
+    -webkit-appearance: none;
+    background: linear-gradient(45deg, transparent 50%, white 50%), linear-gradient(135deg, white 50%, transparent 50%), linear-gradient(to right, #007bff, #007bff);
+    background-position: calc(100% - 21px) calc(1em + 2px), calc(100% - 16px) calc(1em + 2px), 100%;
+    background-size: 5px 5px, 5px 5px, 1.5em 2.5em;
+    background-repeat: no-repeat;
+    font: 300 1em/100% "Helvetica Neue", Arial, sans-serif;
+    padding-right: 30px;*/
 
+    cursor: pointer;
+
+}
 #connectedChartSelectId{
    margin-left: 30px;
     display: block;

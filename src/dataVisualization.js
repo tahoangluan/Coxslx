@@ -1074,5 +1074,18 @@ export function createBtnDiv(divId) {
         .text(function (d) {
             return d;
         })
+  let delimiter = ["Comma", "Semicolon", "Space", "Tab","Pipe"]
+  let delimiterDiv = buttonDiv.append("div").attr("id","selectForm")
+  delimiterDiv.append("label").attr("style","margin-left:5px;margin-right:5px;").text("Delimeter: ")
+  delimiterDiv.append("select").attr("id","delimiterSelect").selectAll("option")
+    .data(delimiter).enter().append("option").text(function (d) {
+    return d})
+  if ($("#nbinsForm").length !== 0) {
+    document.getElementById("nbinsForm").remove();
+  }
+
+  var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
+  nbinsDiv.append("input").attr("id", "nbins").attr("class", "barChartRadio")
+    .attr("type", "number").attr("min", "1").attr("id", "nbins")
     return buttonDiv
 }
