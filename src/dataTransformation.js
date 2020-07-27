@@ -2,6 +2,7 @@ import {ChartCreator, createAndModifyDivs, errorHTML} from "./dataVisualization.
 import "./main.css"
 const d3 = require("d3")
 const $ = require("jquery")
+const XLSX = require("xlsx")
 require("bootstrap")
 /* eslint-disable */
 export class Transformator {
@@ -14,25 +15,31 @@ export class Transformator {
         let divId = this.divId
         let buttonDiv = this.buttonDiv
         var data1 = new Uint8Array(arrayBuffer)
+        try {
+          let excelResult = getWorkbook(data1)
+          let newSheetNames = excelResult.sheetname
+          let workbookArray = excelResult.workbookArray
 
-        let excelResult = getWorkbook(data1)
-        let newSheetNames = excelResult.sheetname
-        let workbookArray = excelResult.workbookArray
-
-        createAndModifyDivs(divId, newSheetNames)
-        var defaultSheet = sheetToJson(0,workbookArray)
-        let defaultExcelDiagramm = new ChartCreator()
-        defaultExcelDiagramm.visualization(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", buttonDiv)
-        for (let i = 0; i < newSheetNames.length; i++) {
+          createAndModifyDivs(divId, newSheetNames)
+          var defaultSheet = sheetToJson(0,workbookArray)
+          let defaultExcelDiagramm = new ChartCreator()
+          defaultExcelDiagramm.visualization(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", buttonDiv)
+          for (let i = 0; i < newSheetNames.length; i++) {
             document.getElementById("btn_" + newSheetNames[i]).onclick = function () {
-                var newarray = sheetToJson(i,workbookArray)
-                // eslint-disable-next-line no-undef
-                $("#showSheet").empty();
-                let sheetExcelDiagramm = new ChartCreator()
-                sheetExcelDiagramm.visualization(newarray, Object.keys(newarray[0]), "showSheet", buttonDiv)
+              var newarray = sheetToJson(i,workbookArray)
+              // eslint-disable-next-line no-undef
+              $("#showSheet").empty();
+              let sheetExcelDiagramm = new ChartCreator()
+              sheetExcelDiagramm.visualization(newarray, Object.keys(newarray[0]), "showSheet", buttonDiv)
             }
-
+          }
         }
+        catch (error) {
+          errorHTML(divId, "Error while reading file or creating table",
+            "You are trying to render a file whose content could not be read. " +
+            "Please make sure your file is still accessible or exists.")
+        }
+
 
     }
     csvFromFileToTable() {

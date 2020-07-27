@@ -37,7 +37,6 @@ function render(file, divId) {
                 else if (data.contentType.includes("excel")||
                     data.contentType.includes("spreadsheet")||
                     file.endsWith(".ods")||file.endsWith(".xlsx")||file.endsWith(".xls")){
-
                     transformator.xlxsReadFile(data.arrayBuffer)
                 }
                 else {
