@@ -77,7 +77,7 @@ class Grid {
     gridVisualization(input, headers, divId) {
         var table = d3.select("#" + divId)
                 .append("div").attr("id", "gridVisualization").attr("style","margin-left: 20px;")
-                .append("table").attr("id", "tblVis"),
+                .append("table").attr("id", "tblVis").attr("style",  "table-layout:fixed;width:100%"),
             thead = table.append("thead"),
             tbody = table.append("tbody"),
             tfoot = table.append("tfoot");
@@ -90,6 +90,7 @@ class Grid {
             .attr("id", function (d) {
                 return "th_" + d;
             })
+            .attr("style","word-wrap: break-word")
             .text(function (column) {
                 return column;
             }).append("button")
