@@ -25,9 +25,9 @@ async function checkURL(url,divId)
 
 function render(file, divId) {
     checkURL(file,divId).then(data => {
-      let buttonDiv = createBtnDiv(divId)
-      let transformator = new Transformator(file, divId, buttonDiv)
         if (data.status !== 404){
+          let buttonDiv = createBtnDiv(divId)
+          let transformator = new Transformator(file, divId, buttonDiv)
           if (data.contentType.includes("csv")||
             data.contentType.includes("tab-separated")
             ||file.endsWith(".csv")||file.endsWith(".tsv")){
@@ -44,13 +44,24 @@ function render(file, divId) {
               "You are trying to render a file type that is not supported. " +
               "Please make sure your file is created in xlx, xlsx, ods or csv.")                }
         }
+        else if (data.status === 403){
+          console.log("Forbidden")
+          errorHTML(divId, data.status + " "+data.statusText,
+            "Access to the requested resource is forbidden." +
+            "It's might be that the server understood the request but refuses to authorize it.")
+        }
+        else if (data.status === 401){
+          console.log("Unauthorized")
+          errorHTML(divId, data.status + " "+data.statusText,
+            "The request has not been applied." +
+            "It lacks valid authentication credentials.")
+        }
         else {
           console.log("File not found")
           errorHTML(divId, data.status + " "+data.statusText,
             "You are trying to render a file whose content could not be read. " +
             "Please make sure your file is still accessible or exists.")
         }
-
         }
     );
 

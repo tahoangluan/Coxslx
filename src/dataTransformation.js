@@ -42,31 +42,91 @@ export class Transformator {
 
 
     }
-    csvFromFileToTable() {
+    async csvFromFileToTable() {
         let file = this.file
         let divId = this.divId
         let buttonDiv = this.buttonDiv
         let csvDiagramm = new ChartCreator()
-        csvRead(file).then(function (data) {
-            var columns = data.columns
-            csvDiagramm.visualization(data, columns, divId, buttonDiv)
-        })
-            .catch(function (error) {
-                console.log("Error ", error)
-                errorHTML(divId, error,
-                    "You are trying to render a csv file whose content could not be read. " +
-                    "Please make sure your file is still accessible or exists.")
-            })
+     let data = await readCsvBySeparator(",",file,divId).then(data =>{
+        return data
+     })
+
+      var columns = data.columns
+      csvDiagramm.visualization(data, columns, divId, buttonDiv)
+
+      $( "#delimiterSelect" ).change( async ()=>{
+        let delimiterString = d3.select("#delimiterSelect").node().value
+        if (delimiterString === "Comma"){
+          data = await readCsvBySeparator(",",file,divId).then(data =>{
+            return data
+          })
+          columns = data.columns
+          document.getElementById(divId).removeChild(document.getElementById("divToVis"))
+          csvDiagramm.visualization(data, columns, divId, buttonDiv)
+        }
+        if (delimiterString === "Semicolon"){
+          data = await readCsvBySeparator(";",file,divId).then(data =>{
+            return data
+          })
+          columns = data.columns
+          document.getElementById(divId).removeChild(document.getElementById("divToVis"))
+          csvDiagramm.visualization(data, columns, divId, buttonDiv)
+        }
+        if (delimiterString === "Space"){
+          data = await readCsvBySeparator(" ",file,divId).then(data =>{
+            return data
+          })
+          columns = data.columns
+          document.getElementById(divId).removeChild(document.getElementById("divToVis"))
+          csvDiagramm.visualization(data, columns, divId, buttonDiv)
+        }
+        if (delimiterString === "Pipe"){
+          data = await readCsvBySeparator("|",file,divId).then(data =>{
+            return data
+          })
+          columns = data.columns
+          document.getElementById(divId).removeChild(document.getElementById("divToVis"))
+          csvDiagramm.visualization(data, columns, divId, buttonDiv)
+        }
+        if (delimiterString === "Tab"){
+          data = await readCsvBySeparator(delimiterString,file,divId).then(data =>{
+            return data
+          })
+          columns = data.columns
+          document.getElementById(divId).removeChild(document.getElementById("divToVis"))
+          csvDiagramm.visualization(data, columns, divId, buttonDiv)
+        }
+      });
     }
 }
-export function csvRead(file) {
+
+async function readCsvBySeparator(separator,file,divId) {
   var headers = {
     "Accept":"text/csv"
   }
-    const response =  d3.csv(file,{ method: 'GET', headers: headers})
-    return response
+  if (separator == "Tab"){
+    let result = await d3.tsv(file,{ method: 'GET', headers: headers}).then(data=>{
+      return data
+    }).catch(function (error) {
+      console.log("Error ", error)
+      errorHTML(divId, error,
+        "You are trying to render a tsv file whose content could not be read. " +
+        "Please make sure your file is still accessible or exists.")
+    })
+    return result
+  }
+  else{
+    let result = await d3.dsv(separator,file,{ method: 'GET', headers: headers}).then(data=>{
+      return data
+    }).catch(function (error) {
+      console.log("Error ", error)
+      errorHTML(divId, error,
+        "You are trying to render a csv file whose content could not be read. " +
+        "Please make sure your file is still accessible or exists.")
+    })
+    return result
+  }
 }
-
 function getWorkbook(data) {
     // eslint-disable-next-line no-undef
     var workbookArray = XLSX.read(data, {type: "array"});
