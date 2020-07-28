@@ -12,15 +12,14 @@ Coxlsx is a JavaScript library for transforming and visualizing data using web s
 * [Bootstrap](https://getbootstrap.com/)
 
 ### Setup
-* Clone this repository
-* Open the repository directory in shell
-* Install Node.js packages with `npm install`
-* Copy the project to your project
-* Install frontend dependencies with yarn
-* Import the project in your component with `import {render,webSocket} from 'Path To The Project';`
-* Import font-awesome.css and bootstrap.min.css in style
-* Create a div-container with id where the data is displayed for example `<div id="visualisation"></div>`
-* Call the method which you want to call:
-* * `render(url,"visualisation")` for CSV or Excel-Format
-* * `webSocket(url,timeout,"visualisation")` for Realtime-Data
+* git clone https://gitlab.fokus.fraunhofer.de/quarz/hub/piveau-ui.git
+* cd piveau-ui
+* git checkout dataVisualisation
+* npm install
+* git clone https://gitlab.fokus.fraunhofer.de/quarz/hub/piveau-visualization.git
+* cd piveau-visualization
+* npm install
+* cd ..
+* npm run dev
+
 
