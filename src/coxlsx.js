@@ -26,16 +26,19 @@ async function checkURL(url,divId)
 function render(file, divId) {
     checkURL(file,divId).then(data => {
         if (data.status !== 404){
-          let buttonDiv = createBtnDiv(divId)
-          let transformator = new Transformator(file, divId, buttonDiv)
+
           if (data.contentType.includes("csv")||
             data.contentType.includes("tab-separated")
             ||file.endsWith(".csv")||file.endsWith(".tsv")){
+            let buttonDiv = createBtnDiv(divId,"CSV")
+            let transformator = new Transformator(file, divId, buttonDiv)
             transformator.csvFromFileToTable()
           }
           else if (data.contentType.includes("excel")||
             data.contentType.includes("spreadsheet")||
             file.endsWith(".ods")||file.endsWith(".xlsx")||file.endsWith(".xls")){
+            let buttonDiv = createBtnDiv(divId,"Excel")
+            let transformator = new Transformator(file, divId, buttonDiv)
             transformator.xlxsReadFile(data.arrayBuffer)
           }
           else {

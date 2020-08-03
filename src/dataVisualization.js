@@ -393,7 +393,7 @@ class Graph {
     }
     createBarchart(data, divId, headerToVis, xAxis, barC) {
         var margin = {top: 10, right: 30, bottom: 20, left: 50},
-            width = 1400 - margin.top - margin.bottom,
+            width = $("#"+divId).width() - margin.top - margin.bottom,
             height = 400 - margin.top - margin.bottom;
         var svg = d3.select("#" + divId)
             .append("svg")
@@ -1049,7 +1049,7 @@ export function createAndModifyDivs(mainDivId, workSheets) {
     buttonDiv.style = "display: flex;flex-wrap: wrap;justify-content: center;margin-top: 10px;"
     mainDiv.appendChild(buttonDiv)
 }
-export function createBtnDiv(divId) {
+export function createBtnDiv(divId, datatype) {
     let da = ["ConnectedChart", "BarChart"]
     var buttonDiv = d3.select("#" + divId).append("div").attr("class", "gridGraphBtnDiv")
     var grid = buttonDiv.append("button").text("Grid").attr("class", "btn btn-primary")
@@ -1074,18 +1074,21 @@ export function createBtnDiv(divId) {
         .text(function (d) {
             return d;
         })
-    let delimiter = ["Comma", "Semicolon", "Space", "Tab","Pipe"]
-    let delimiterDiv = buttonDiv.append("div").attr("id","selectForm")
-    delimiterDiv.append("label").attr("style","margin-left:5px;margin-right:5px;").text("Delimeter: ")
-    delimiterDiv.append("select").attr("id","delimiterSelect").selectAll("option")
-      .data(delimiter).enter().append("option").text(function (d) {
-      return d})
-    if ($("#nbinsForm").length !== 0) {
-      document.getElementById("nbinsForm").remove();
+    if (datatype == "CSV"){
+      let delimiter = ["Comma", "Semicolon", "Space", "Tab","Pipe"]
+      let delimiterDiv = buttonDiv.append("div").attr("id","selectForm")
+      delimiterDiv.append("label").attr("style","margin-left:5px;margin-right:5px;").text("Delimeter: ")
+      delimiterDiv.append("select").attr("id","delimiterSelect").selectAll("option")
+        .data(delimiter).enter().append("option").text(function (d) {
+        return d})
+      if ($("#nbinsForm").length !== 0) {
+        document.getElementById("nbinsForm").remove();
+      }
+
+      var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
+      nbinsDiv.append("input").attr("id", "nbins").attr("class", "barChartRadio")
+        .attr("type", "number").attr("min", "1").attr("id", "nbins")
     }
 
-    var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
-    nbinsDiv.append("input").attr("id", "nbins").attr("class", "barChartRadio")
-      .attr("type", "number").attr("min", "1").attr("id", "nbins")
     return buttonDiv
 }
