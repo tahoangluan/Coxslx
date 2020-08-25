@@ -1,4 +1,4 @@
-import {ChartCreator, createAndModifyDivs, errorHTML} from "./dataVisualization.js";
+import {ChartCreator, Helper} from "./dataVisualization.js";
 import "./main.css"
 const d3 = require("d3")
 const $ = require("jquery")
@@ -16,17 +16,17 @@ export class Transformator {
         let buttonDiv = this.buttonDiv
         var data1 = new Uint8Array(arrayBuffer)
         try {
-          let excelResult = getWorkbook(data1)
+          let excelResult = this.getWorkbook(data1)
           let newSheetNames = excelResult.sheetname
           let workbookArray = excelResult.workbookArray
 
-          createAndModifyDivs(divId, newSheetNames)
-          var defaultSheet = sheetToJson(0,workbookArray)
+          new Helper().createAndModifyDivsForSheets(divId, newSheetNames)
+          var defaultSheet = this.sheetToJson(0,workbookArray)
           let defaultExcelDiagramm = new ChartCreator()
           defaultExcelDiagramm.visualization(defaultSheet, Object.keys(defaultSheet[0]), "showSheet", buttonDiv)
           for (let i = 0; i < newSheetNames.length; i++) {
             document.getElementById("btn_" + newSheetNames[i]).onclick = function () {
-              var newarray = sheetToJson(i,workbookArray)
+              var newarray = this.sheetToJson(i,workbookArray)
               // eslint-disable-next-line no-undef
               $("#showSheet").empty();
               let sheetExcelDiagramm = new ChartCreator()
@@ -35,19 +35,19 @@ export class Transformator {
           }
         }
         catch (error) {
-          errorHTML(divId, "Error while reading file or creating table",
+          new Helper().errorHTML(divId, "Error while reading file or creating table",
             "You are trying to render a file whose content could not be read. " +
             "Please make sure your file is still accessible or exists.")
         }
 
 
     }
-    async csvFromFileToTable() {
+    async csvReadFile() {
         let file = this.file
         let divId = this.divId
         let buttonDiv = this.buttonDiv
         let csvDiagramm = new ChartCreator()
-     let data = await readCsvBySeparator(",",file,divId).then(data =>{
+     let data = await this.getResponseFromCsv(",",file,divId).then(data =>{
         return data
      })
 
@@ -57,7 +57,7 @@ export class Transformator {
       $( "#delimiterSelect" ).change( async ()=>{
         let delimiterString = d3.select("#delimiterSelect").node().value
         if (delimiterString === "Comma"){
-          data = await readCsvBySeparator(",",file,divId).then(data =>{
+          data = await getResponseFromCsv(",",file,divId).then(data =>{
             return data
           })
           columns = data.columns
@@ -65,7 +65,7 @@ export class Transformator {
           csvDiagramm.visualization(data, columns, divId, buttonDiv)
         }
         if (delimiterString === "Semicolon"){
-          data = await readCsvBySeparator(";",file,divId).then(data =>{
+          data = await getResponseFromCsv(";",file,divId).then(data =>{
             return data
           })
           columns = data.columns
@@ -73,7 +73,7 @@ export class Transformator {
           csvDiagramm.visualization(data, columns, divId, buttonDiv)
         }
         if (delimiterString === "Space"){
-          data = await readCsvBySeparator(" ",file,divId).then(data =>{
+          data = await getResponseFromCsv(" ",file,divId).then(data =>{
             return data
           })
           columns = data.columns
@@ -81,7 +81,7 @@ export class Transformator {
           csvDiagramm.visualization(data, columns, divId, buttonDiv)
         }
         if (delimiterString === "Pipe"){
-          data = await readCsvBySeparator("|",file,divId).then(data =>{
+          data = await getResponseFromCsv("|",file,divId).then(data =>{
             return data
           })
           columns = data.columns
@@ -89,7 +89,7 @@ export class Transformator {
           csvDiagramm.visualization(data, columns, divId, buttonDiv)
         }
         if (delimiterString === "Tab"){
-          data = await readCsvBySeparator(delimiterString,file,divId).then(data =>{
+          data = await getResponseFromCsv(delimiterString,file,divId).then(data =>{
             return data
           })
           columns = data.columns
@@ -98,59 +98,59 @@ export class Transformator {
         }
       });
     }
-}
-
-async function readCsvBySeparator(separator,file,divId) {
-  var headers = {
-    "Accept":"text/csv"
-  }
-  if (separator == "Tab"){
-    let result = await d3.tsv(file,{ method: 'GET', headers: headers}).then(data=>{
-      return data
-    }).catch(function (error) {
-      console.log("Error ", error)
-      errorHTML(divId, error,
-        "You are trying to render a tsv file whose content could not be read. " +
-        "Please make sure your file is still accessible or exists.")
-    })
-    return result
-  }
-  else{
-    let result = await d3.dsv(separator,file,{ method: 'GET', headers: headers}).then(data=>{
-      return data
-    }).catch(function (error) {
-      console.log("Error ", error)
-      errorHTML(divId, error,
-        "You are trying to render a csv file whose content could not be read. " +
-        "Please make sure your file is still accessible or exists.")
-    })
-    return result
-  }
-}
-function getWorkbook(data) {
+    getWorkbook(data) {
     // eslint-disable-next-line no-undef
     var workbookArray = XLSX.read(data, {type: "array"});
     for (let i = 0; i < workbookArray.SheetNames.length; i++) {
-        var sheetname = workbookArray.SheetNames[i]
-        var worksheet = workbookArray.Sheets[sheetname];
+      var sheetname = workbookArray.SheetNames[i]
+      var worksheet = workbookArray.Sheets[sheetname];
 
-        if (JSON.stringify(worksheet) == '{}') {
-            workbookArray.SheetNames.slice(i, 1)
-        }
+      if (JSON.stringify(worksheet) == '{}') {
+        workbookArray.SheetNames.slice(i, 1)
+      }
     }
     var newSheetNames = workbookArray.SheetNames.filter(function (element) {
-        return JSON.stringify(workbookArray.Sheets[element]) != '{}'
+      return JSON.stringify(workbookArray.Sheets[element]) != '{}'
     })
     return {
-        workbookArray:workbookArray,
-        sheetname: newSheetNames
+      workbookArray:workbookArray,
+      sheetname: newSheetNames
     }
-}
-
-function sheetToJson(index,workbookArray) {
+  }
+    sheetToJson(index,workbookArray) {
     var sheetName = workbookArray.SheetNames[index]
     var sheet = workbookArray.Sheets[sheetName];
     // eslint-disable-next-line no-undef
     var sheetToJson = XLSX.utils.sheet_to_json(sheet, {raw: true, defval: ""})
     return sheetToJson
+  }
+    async getResponseFromCsv(separator, file, divId) {
+      var headers = {
+        "Accept":"text/csv"
+      }
+      if (separator == "Tab"){
+        let result = await d3.tsv(file,{ method: 'GET', headers: headers}).then(data=>{
+          return data
+        }).catch(function (error) {
+          console.log("Error ", error)
+          new Helper().errorHTML(divId, error,
+            "You are trying to render a tsv file whose content could not be read. " +
+            "Please make sure your file is still accessible or exists.")
+        })
+        return result
+      }
+      else{
+        let result = await d3.dsv(separator,file,{ method: 'GET', headers: headers}).then(data=>{
+          return data
+        }).catch(function (error) {
+          console.log("Error ", error)
+          new Helper().errorHTML(divId, error,
+            "You are trying to render a csv file whose content could not be read. " +
+            "Please make sure your file is still accessible or exists.")
+        })
+        return result
+      }
+    }
 }
+
+

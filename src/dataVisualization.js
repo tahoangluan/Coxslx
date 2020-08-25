@@ -4,7 +4,7 @@ const d3 = require("d3")
 const $ = require("jquery")
 /* eslint-disable */
 export class Helper {
-    wrap(text, width) {
+    wrapLegende(text, width) {
         text.each(function () {
             var text = d3.select(this),
                 words = text.text().split(/\s+/).reverse(),
@@ -43,7 +43,7 @@ export class Helper {
             });
         });
     }
-    tooltipFunction(divId) {
+    createTooltip(divId) {
         var Tooltip = d3.select("#" + divId)
             .append("div")
             .style("opacity", 0)
@@ -72,6 +72,81 @@ export class Helper {
         });
         return newData
     }
+    createSheetsButton(sheetname, i) {
+      var button = document.createElement('BUTTON');
+      var text = document.createTextNode(sheetname);
+      button.id = "btn_" + sheetname
+      button.style = "order:" + i+";margin-right:3px"
+      button.appendChild(text);
+      return button;
+    }
+    errorHTML(divId, headerErrorText, text2) {
+    document.getElementById(divId).innerHTML = ""
+    var error = d3.select("#" + divId).append("div")
+      .attr("class", "js-temp-notice alert alert-warning alert-block")
+    error.append("h3").attr("class", "alert-heading").text(headerErrorText)
+    error.append("p").text(text2)
+  }
+    createAndModifyDivsForSheets(mainDivId, workSheets) {
+    var buttonDiv = document.createElement("div");
+    var showSheet = document.createElement("div");
+    showSheet.style = "display: flex"
+    showSheet.id = "showSheet"
+    showSheet.className = "showSheet"
+    var mainDiv = document.getElementById(mainDivId),
+      myDivs = []
+    mainDiv.appendChild(showSheet)
+    for (let i = 0; i < workSheets.length; i++) {
+      myDivs.push(new Helper().createSheetsButton(workSheets[i], i));
+      buttonDiv.appendChild(myDivs[i]);
+    }
+    buttonDiv.id = "sheetsDiv"
+    buttonDiv.style = "display: flex;flex-wrap: wrap;justify-content: center;margin-top: 10px;"
+    mainDiv.appendChild(buttonDiv)
+  }
+    createGridAndGraphBtns(divId, datatype) {
+    let da = ["ConnectedChart", "BarChart"]
+    var buttonDiv = d3.select("#" + divId).append("div").attr("class", "gridGraphBtnDiv")
+    var grid = buttonDiv.append("button").text("Grid").attr("class", "btn btn-primary")
+      .attr("id","gridBtnForAddEvent")
+    var visualizationBtn = buttonDiv.append("div").attr("class", "dropdown");
+    visualizationBtn.append("button")
+      .attr("class", "btn btn-primary dropdown-toggle")
+      .attr("style", "margin-left:5px")
+      .attr("id", "selectedBtn")
+      .attr("data-toggle", "dropdown")
+      .text("Graph")
+    visualizationBtn
+      .append("div").attr("class", "dropdown-menu").attr("style", "padding:0").selectAll("li")
+      .data(da)
+      .enter().append("li").append("a")
+      .attr("data-toggle", "modal")
+      .attr("href", "")
+      .attr("data-target", function (d) {
+        var dataTarget = "#" + d + "Modal"
+        return dataTarget;
+      })
+      .text(function (d) {
+        return d;
+      })
+    if (datatype == "CSV"){
+      let delimiter = ["Comma", "Semicolon", "Space", "Tab","Pipe"]
+      let delimiterDiv = buttonDiv.append("div").attr("id","selectForm")
+      delimiterDiv.append("label").attr("style","margin-left:5px;margin-right:5px;").text("Delimeter: ")
+      delimiterDiv.append("select").attr("id","delimiterSelect").selectAll("option")
+        .data(delimiter).enter().append("option").text(function (d) {
+        return d})
+      if ($("#nbinsForm").length !== 0) {
+        document.getElementById("nbinsForm").remove();
+      }
+
+      var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
+      nbinsDiv.append("input").attr("id", "nbins").attr("class", "barChartRadio")
+        .attr("type", "number").attr("min", "1").attr("id", "nbins")
+    }
+
+    return buttonDiv
+  }
 }
 class Grid {
     gridVisualization(input, headers, divId) {
@@ -195,7 +270,7 @@ class Graph {
             .attr("dx", "-.9em")
             .attr("dy", "-1.6em")
             .attr("transform", "rotate(-90)")
-            .call(new Helper().wrap, x.bandwidth())
+            .call(new Helper().wrapLegende, x.bandwidth())
 
         let formatValue = d3.format(".2s");
         svg.append("g")
@@ -213,7 +288,7 @@ class Graph {
             .range(colorArray);
 
 
-        var Tooltip = new Helper().tooltipFunction(divId)
+        var Tooltip = new Helper().createTooltip(divId)
         var mouseover = function (d) {
             Tooltip
                 .style("opacity", 1)
@@ -287,7 +362,7 @@ class Graph {
                 .attr("dx", "-.9em")
                 .attr("dy", "-1.6em")
                 .attr("transform", "rotate(-90)")
-                .call(new Helper().wrap, x.bandwidth())
+                .call(new Helper().wrapLegende, x.bandwidth())
 
             svg.append("g")
                 .attr("class", "y axis").attr("id", "gyId")
@@ -333,7 +408,6 @@ class Graph {
         })
 
     }
-
     updateBarChartByBins(nbins, divId, headerToVis, xAxis, barC, input) {
         new Graph().createBarchart(nbins, divId, headerToVis, xAxis, barC)
         $("#nbins").on("input", function () {
@@ -343,7 +417,7 @@ class Graph {
             $("#" + divId).contents(':not(form)').remove();
             document.getElementById("divToVis").innerHTML = ""
             new Graph().createBarchart(d, divId, headerToVis, xAxis, barC)
-            new Graph().changeBarStacked(d, divId, headerToVis, xAxis,input)
+            new Graph().changeBarChart(d, divId, headerToVis, xAxis,input)
 
         });
     }
@@ -378,7 +452,7 @@ class Graph {
             new Graph().lineChart(d, allGroup, divId, xAxis,selectedOption)
         });
     }
-    changeBarStacked(nbins, divId, headerToVis, xAxis, input) {
+    changeBarChart(nbins, divId, headerToVis, xAxis, input) {
         $('#modeForm input').on('change', function () {
             let selectedRadio = $('input[name=mode]:checked', '#modeForm').val()
             if (selectedRadio == "grouped") {
@@ -410,7 +484,7 @@ class Graph {
             colorArray.push(color)
         }
         var color = d3.scaleOrdinal().domain(subgroups).range(colorArray)
-        var tooltip = new Helper().tooltipFunction(divId)
+        var tooltip = new Helper().createTooltip(divId)
         var mousemove = function (d) {
             tooltip
                 .style("top", (d3.event.pageY + 10) + "px")
@@ -460,7 +534,7 @@ class Graph {
             svg.append("g")
                 .attr("transform", "translate(0," + y(0) + ")")
                 .call(d3.axisBottom(x).tickSize(0)).selectAll(".tick text")
-                .call(new Helper().wrap, x.bandwidth());
+                .call(new Helper().wrapLegende, x.bandwidth());
 
             svg.append("g")
                 .attr("class", "y axis")
@@ -518,7 +592,7 @@ class Graph {
             svg.append("g")
                 .attr("transform", "translate(0," + y(0) + ")")
                 .call(d3.axisBottom(x).tickSize(0)).selectAll(".tick text")
-                .call(new Helper().wrap, x.bandwidth())
+                .call(new Helper().wrapLegende, x.bandwidth())
 
             svg.append("g")
                 .attr("class", "y axis")
@@ -602,141 +676,131 @@ class Graph {
         $(document).ready(function () {
             $('input[type="radio"]:first').trigger('click');
         });
-        new Graph().changeBarStacked(nbins, divId, headerToVis, xAxis, input)
+        new Graph().changeBarChart(nbins, divId, headerToVis, xAxis, input)
 
-    }
-}
-class Generator{
-    chartModal(input, headers, idChart, xAxisId, textChart, submitBtnId, footerText) {
-        var modal = d3.select("body").append("div").attr("class", "modal fade").attr("id", idChart)
-            .attr("tabindex", "-1")
-            .attr("role", "dialog")
-            .attr("aria-labelledby", "myModalLabel")
-            .attr("aria-hidden", true)
-
-        var modal_dialog = modal.append("div").attr("class", "modal-dialog")
-        var modal_content = modal_dialog.append("div").attr("class", "modal-content")
-        var modal_header = modal_content.append("div").attr("class", "modal-header")
-        modal_header.append("h5").attr("class", "modal-title").attr("id", "myModalLabel").text(textChart)
-        modal_header.append("button").attr("type", "button").attr("class", "close")
-            .attr("data-dismiss", "modal").attr("aria-label", "Close").attr("aria-hidden", true)
-            .text("x")
-        var modal_body = modal_content.append("div").attr("class", "modal-body")
-        var fieldsetXAxis = modal_body.append("fieldset")
-            .attr("class", "fieldsetBorder")
-        fieldsetXAxis.append("legend").attr("class", "legendStyle").text("X Axis ")
-        fieldsetXAxis.append("label").attr("class", "xAxisDiv")
-            .text("Select").append("select")
-            .attr("id", xAxisId)
-            .attr("style", "margin-left:10px").selectAll("option")
-            .data(headers).enter().append("option").text(function (d) {
-            return d
-        })
-
-        if (textChart === "Bar Chart") {
-            modal_body.append("div").attr("class", "vl")
-            var fieldsetYAxis = modal_body.append("fieldset").attr("class", "fieldsetBorder")
-            fieldsetYAxis.append("legend").attr("class", "legendStyle").text("Y Axis ")
-            fieldsetYAxis.append("div").attr("class", "fieldsetYAxis").selectAll("input")
-                .data(headers)
-                .enter()
-                .append("div").attr("style", "margin-left: 10px;")
-                .append('label')
-                .attr('for', function (d, i) {
-                    return 'a' + i;
-                })
-                .attr('order', function (d, i) {
-                    return i;
-                })
-                .text(function (d) {
-                    return d;
-                })
-                .append("input").attr("style", "margin-left:5px")
-                .attr("checked", true)
-                .attr("type", "checkbox")
-                .attr("name", "yAxisBarChartSelect")
-                .attr("value", function (d) {
-                    return d
-                })
-                .attr("id", function (d, i) {
-                    return 'a' + i;
-                })
-        }
-        var modal_footer = modal_content.append("div").attr("class", "modal-footer")
-            .text(footerText)
-        var pullRightDiv = modal_footer.append("div").attr("class", "pull-right")
-        pullRightDiv.append("button").attr("class", "btn btn-secondary")
-            .attr("data-dismiss", "modal").text("Cancel")
-        pullRightDiv.append("div").attr("class", "pull-right").append("button").attr("class", "btn btn-warning")
-            .attr("style", "margin-left:10px")
-            .attr("id", submitBtnId)
-            .attr("type", "submit").text("Confirm")
-    }
-    changeNbinsFormStyle(binsFormId) {
-        let nbinsform_nav = d3.select("#"+binsFormId).append("div").attr("class",binsFormId+"-nav")
-        let nbinsFormUp = nbinsform_nav.append("div").attr("class","nbinsForm-btn nbinsForm-up").text("+")
-        let nbinsFormDown= nbinsform_nav.append("div").attr("class","nbinsForm-btn nbinsForm-down").text("-")
-
-        let inputForm = $("#"+binsFormId).find('input[type="number"]'),
-            min = inputForm.attr('min'),
-            max = inputForm.attr('max');
-        nbinsFormUp.on("click",function (d) {
-            var oldValue = parseFloat(inputForm.val());
-            if (oldValue >= max) {
-                var newVal = oldValue;
-            } else {
-                var newVal = oldValue + 1;
-            }
-            inputForm.val(newVal)
-            inputForm.trigger("change");
-            inputForm.trigger("input");
-            inputForm.trigger("keypress");
-        })
-        nbinsFormDown.on("click",function (d) {
-            var oldValue = parseFloat(inputForm.val());
-            if (oldValue <= min) {
-                var newVal = oldValue;
-            } else {
-                var newVal = oldValue - 1;
-            }
-            inputForm.val(newVal);
-            inputForm.trigger("input");
-            inputForm.trigger("change");
-            inputForm.trigger("keypress");
-        })
-
-    }
-    generateBC(nbins,input) {
-        let xAxisBarChartSelected = d3.select("#xAxisBarChartSelect").node().value;
-        var yAxisBarChartSelected = [];
-
-        $.each($("input:checkbox[name='yAxisBarChartSelect']:checked"), function () {
-            yAxisBarChartSelected.push($(this).val());
-        });
-        document.getElementById("divToVis").innerHTML = ""
-        $('#BarChartModal').modal('hide');
-        $('.modal-backdrop').remove();
-        new Graph().barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
     }
     generateCC(nbins, input,headers) {
-        let xAxisConnectedChartSelect = d3.select("#xAxisConnectedChartSelect").node().value;
-        document.getElementById("divToVis").innerHTML = ""
-        $('#ConnectedChartModal').modal('hide');
-        $('.modal-backdrop').remove();
-        new Graph().updateConnectedChartByBins(nbins, headers, "divToVis", xAxisConnectedChartSelect, input)
+    let xAxisConnectedChartSelect = d3.select("#xAxisConnectedChartSelect").node().value;
+    document.getElementById("divToVis").innerHTML = ""
+    $('#ConnectedChartModal').modal('hide');
+    $('.modal-backdrop').remove();
+    new Graph().updateConnectedChartByBins(nbins, headers, "divToVis", xAxisConnectedChartSelect, input)
+  }
+    generateBC(nbins,input) {
+    let xAxisBarChartSelected = d3.select("#xAxisBarChartSelect").node().value;
+    var yAxisBarChartSelected = [];
+
+    $.each($("input:checkbox[name='yAxisBarChartSelect']:checked"), function () {
+      yAxisBarChartSelected.push($(this).val());
+    });
+    document.getElementById("divToVis").innerHTML = ""
+    $('#BarChartModal').modal('hide');
+    $('.modal-backdrop').remove();
+    new Graph().barChart(nbins, "divToVis", yAxisBarChartSelected, xAxisBarChartSelected, input)
+  }
+    changeNbinsFormStyle(binsFormId) {
+    let nbinsform_nav = d3.select("#"+binsFormId).append("div").attr("class",binsFormId+"-nav")
+    let nbinsFormUp = nbinsform_nav.append("div").attr("class","nbinsForm-btn nbinsForm-up").text("+")
+    let nbinsFormDown= nbinsform_nav.append("div").attr("class","nbinsForm-btn nbinsForm-down").text("-")
+
+    let inputForm = $("#"+binsFormId).find('input[type="number"]'),
+      min = inputForm.attr('min'),
+      max = inputForm.attr('max');
+    nbinsFormUp.on("click",function (d) {
+      var oldValue = parseFloat(inputForm.val());
+      if (oldValue >= max) {
+        var newVal = oldValue;
+      } else {
+        var newVal = oldValue + 1;
+      }
+      inputForm.val(newVal)
+      inputForm.trigger("change");
+      inputForm.trigger("input");
+      inputForm.trigger("keypress");
+    })
+    nbinsFormDown.on("click",function (d) {
+      var oldValue = parseFloat(inputForm.val());
+      if (oldValue <= min) {
+        var newVal = oldValue;
+      } else {
+        var newVal = oldValue - 1;
+      }
+      inputForm.val(newVal);
+      inputForm.trigger("input");
+      inputForm.trigger("change");
+      inputForm.trigger("keypress");
+    })
+
+  }
+    chartModal(input, headers, idChart, xAxisId, textChart, submitBtnId, footerText) {
+    var modal = d3.select("body").append("div").attr("class", "modal fade").attr("id", idChart)
+      .attr("tabindex", "-1")
+      .attr("role", "dialog")
+      .attr("aria-labelledby", "myModalLabel")
+      .attr("aria-hidden", true)
+
+    var modal_dialog = modal.append("div").attr("class", "modal-dialog")
+    var modal_content = modal_dialog.append("div").attr("class", "modal-content")
+    var modal_header = modal_content.append("div").attr("class", "modal-header")
+    modal_header.append("h5").attr("class", "modal-title").attr("id", "myModalLabel").text(textChart)
+    modal_header.append("button").attr("type", "button").attr("class", "close")
+      .attr("data-dismiss", "modal").attr("aria-label", "Close").attr("aria-hidden", true)
+      .text("x")
+    var modal_body = modal_content.append("div").attr("class", "modal-body")
+    var fieldsetXAxis = modal_body.append("fieldset")
+      .attr("class", "fieldsetBorder")
+    fieldsetXAxis.append("legend").attr("class", "legendStyle").text("X Axis ")
+    fieldsetXAxis.append("label").attr("class", "xAxisDiv")
+      .text("Select").append("select")
+      .attr("id", xAxisId)
+      .attr("style", "margin-left:10px").selectAll("option")
+      .data(headers).enter().append("option").text(function (d) {
+      return d
+    })
+
+    if (textChart === "Bar Chart") {
+      modal_body.append("div").attr("class", "vl")
+      var fieldsetYAxis = modal_body.append("fieldset").attr("class", "fieldsetBorder")
+      fieldsetYAxis.append("legend").attr("class", "legendStyle").text("Y Axis ")
+      fieldsetYAxis.append("div").attr("class", "fieldsetYAxis").selectAll("input")
+        .data(headers)
+        .enter()
+        .append("div").attr("style", "margin-left: 10px;")
+        .append('label')
+        .attr('for', function (d, i) {
+          return 'a' + i;
+        })
+        .attr('order', function (d, i) {
+          return i;
+        })
+        .text(function (d) {
+          return d;
+        })
+        .append("input").attr("style", "margin-left:5px")
+        .attr("checked", true)
+        .attr("type", "checkbox")
+        .attr("name", "yAxisBarChartSelect")
+        .attr("value", function (d) {
+          return d
+        })
+        .attr("id", function (d, i) {
+          return 'a' + i;
+        })
     }
+    var modal_footer = modal_content.append("div").attr("class", "modal-footer")
+      .text(footerText)
+    var pullRightDiv = modal_footer.append("div").attr("class", "pull-right")
+    pullRightDiv.append("button").attr("class", "btn btn-secondary")
+      .attr("data-dismiss", "modal").text("Cancel")
+    pullRightDiv.append("div").attr("class", "pull-right").append("button").attr("class", "btn btn-warning")
+      .attr("style", "margin-left:10px")
+      .attr("id", submitBtnId)
+      .attr("type", "submit").text("Confirm")
+  }
 }
-function createDiv(sheetname, i) {
-    var button = document.createElement('BUTTON');
-    var text = document.createTextNode(sheetname);
-    button.id = "btn_" + sheetname
-    button.style = "order:" + i+";margin-right:3px"
-    button.appendChild(text);
-    return button;
-}
+
 export class ChartCreator{
     visualization(input, headers, divId, buttonDiv) {
-        let generator = new Generator()
         let table = new Grid()
         if ($(".barChartRadioForm")!=null){
             $(".barChartRadioForm").remove()
@@ -748,11 +812,11 @@ export class ChartCreator{
             $("#BarChartModal").remove();
             $("#ConnectedChartModal").remove();
         }
-        generator.chartModal(input, headers, "BarChartModal", "xAxisBarChartSelect", "Bar Chart", "confirmBarchart", "A bar chart plots numeric values for levels " +
+      new Graph().chartModal(input, headers, "BarChartModal", "xAxisBarChartSelect", "Bar Chart", "confirmBarchart", "A bar chart plots numeric values for levels " +
             "of a categorical feature as bars. " +
             "Levels are plotted on one chart axis, and values are plotted on the other axis.")
 
-        generator.chartModal(input, headers, "ConnectedChartModal", "xAxisConnectedChartSelect", "Connected Graph", "confirmConnectedchart",
+      new Graph().chartModal(input, headers, "ConnectedChartModal", "xAxisConnectedChartSelect", "Connected Graph", "confirmConnectedchart",
             "It is a connected scatterplot is basically an hybrid between a scatterplot and a lineplot" +
             "You have to chose xAxis to render it.")
 
@@ -765,7 +829,7 @@ export class ChartCreator{
             .attr("type", "number").attr("min", "1").attr("id", "nbins").attr("max", input.length)
             .attr("value", Math.round(input.length / 2))
 
-        generator.changeNbinsFormStyle("nbinsForm")
+      new Graph().changeNbinsFormStyle("nbinsForm")
         document.getElementById("gridBtnForAddEvent").addEventListener("click",
             function  gridClick() {
                 let grid = new Grid()
@@ -788,12 +852,12 @@ export class ChartCreator{
         document.getElementById("confirmBarchart").onclick = function () {
             let d = input
             d = d.slice(0, document.getElementById("nbins").value)
-            generator.generateBC(d,input)
+          new Graph().generateBC(d,input)
         }
         document.getElementById("confirmConnectedchart").onclick = function () {
             let d = input
             d = d.slice(0, document.getElementById("nbins").value)
-            generator.generateCC(d, input, headers)
+            new Graph().generateCC(d, input, headers)
         }
         d3.select("#" + divId).append("div").attr("id", "divToVis")
 
@@ -918,7 +982,7 @@ export class ChartCreator{
 
             data = [];
             update();
-            var Tooltip = new Helper().tooltipFunction("chartDiv")
+            var Tooltip = new Helper().createTooltip("chartDiv")
 
             var mouseover = function (d) {
                 Tooltip
@@ -1024,71 +1088,4 @@ export class ChartCreator{
         }
         return chart;
     }
-}
-export function errorHTML(divId, headerErrorText, text2) {
-    document.getElementById(divId).innerHTML = ""
-    var error = d3.select("#" + divId).append("div")
-        .attr("class", "js-temp-notice alert alert-warning alert-block")
-    error.append("h3").attr("class", "alert-heading").text(headerErrorText)
-    error.append("p").text(text2)
-}
-export function createAndModifyDivs(mainDivId, workSheets) {
-    var buttonDiv = document.createElement("div");
-    var showSheet = document.createElement("div");
-    showSheet.style = "display: flex"
-    showSheet.id = "showSheet"
-    showSheet.className = "showSheet"
-    var mainDiv = document.getElementById(mainDivId),
-        myDivs = []
-    mainDiv.appendChild(showSheet)
-    for (let i = 0; i < workSheets.length; i++) {
-        myDivs.push(createDiv(workSheets[i], i));
-        buttonDiv.appendChild(myDivs[i]);
-    }
-    buttonDiv.id = "sheetsDiv"
-    buttonDiv.style = "display: flex;flex-wrap: wrap;justify-content: center;margin-top: 10px;"
-    mainDiv.appendChild(buttonDiv)
-}
-export function createBtnDiv(divId, datatype) {
-    let da = ["ConnectedChart", "BarChart"]
-    var buttonDiv = d3.select("#" + divId).append("div").attr("class", "gridGraphBtnDiv")
-    var grid = buttonDiv.append("button").text("Grid").attr("class", "btn btn-primary")
-        .attr("id","gridBtnForAddEvent")
-    var visualizationBtn = buttonDiv.append("div").attr("class", "dropdown");
-    visualizationBtn.append("button")
-        .attr("class", "btn btn-primary dropdown-toggle")
-        .attr("style", "margin-left:5px")
-        .attr("id", "selectedBtn")
-        .attr("data-toggle", "dropdown")
-        .text("Graph")
-    visualizationBtn
-        .append("div").attr("class", "dropdown-menu").attr("style", "padding:0").selectAll("li")
-        .data(da)
-        .enter().append("li").append("a")
-        .attr("data-toggle", "modal")
-        .attr("href", "")
-        .attr("data-target", function (d) {
-            var dataTarget = "#" + d + "Modal"
-            return dataTarget;
-        })
-        .text(function (d) {
-            return d;
-        })
-    if (datatype == "CSV"){
-      let delimiter = ["Comma", "Semicolon", "Space", "Tab","Pipe"]
-      let delimiterDiv = buttonDiv.append("div").attr("id","selectForm")
-      delimiterDiv.append("label").attr("style","margin-left:5px;margin-right:5px;").text("Delimeter: ")
-      delimiterDiv.append("select").attr("id","delimiterSelect").selectAll("option")
-        .data(delimiter).enter().append("option").text(function (d) {
-        return d})
-      if ($("#nbinsForm").length !== 0) {
-        document.getElementById("nbinsForm").remove();
-      }
-
-      var nbinsDiv = buttonDiv.append("div").attr("id", "nbinsForm")
-      nbinsDiv.append("input").attr("id", "nbins").attr("class", "barChartRadio")
-        .attr("type", "number").attr("min", "1").attr("id", "nbins")
-    }
-
-    return buttonDiv
 }

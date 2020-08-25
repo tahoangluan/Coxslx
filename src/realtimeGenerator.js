@@ -15,7 +15,7 @@ export class RealtimeGenerator {
             .call(chart);
         return chart
     }
-    dataGenerator(data, chart,string) {
+    pointGenerator(data, chart, string) {
         // eslint-disable-next-line no-undef
         var timeScale = d3.scaleLinear()
             .domain([4000, 18000])
@@ -41,10 +41,7 @@ export class RealtimeGenerator {
                 };
                 chart.render(point);
             }
-            new RealtimeGenerator().dataGenerator();
+            new RealtimeGenerator().pointGenerator();
         }, timeout);
     }
-}
-function randomPosition(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
 }

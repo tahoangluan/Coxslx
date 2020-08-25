@@ -9,7 +9,7 @@ export function webSocket(url, timeout, divId) {
     };
     socket.onmessage = function (event) {
         //console.log('Received data: ' + event.data);
-        realtimeGenerator.dataGenerator(event.data, chart)
+        realtimeGenerator.pointGenerator(event.data, chart)
         return false;
     };
     socket.onerror = function(err) {
