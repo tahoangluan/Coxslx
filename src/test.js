@@ -374,22 +374,22 @@ describe("Tests for checkUrl", function () {
             expect(da.statusText).toEqual("OK");
         })
     });
-    it('checkUrl should return the Excel contentType and status 200 of url with xls-Extension', async () => {
-        const data = await checkURL("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLS_10.xls").then(da => {
+    it('checkUrl should return the Excel contentType and status 200 of url with xls-Extension', function () {
+        const data = checkURL("https://drive.google.com/u/0/uc?id=1YntZE_EXxJzGws9SzO0I00NHQrttitwi&export=download").then(da => {
             expect(da.contentType).toEqual("application/vnd.ms-excel");
             expect(da.status).toEqual(200);
             expect(da.statusText).toEqual("OK");
         })
     });
-    it('checkUrl should return the Excel contentType and status 200 of url with xlsx-Extension', async () => {
-        const data = await checkURL("https://file-examples.com/wp-content/uploads/2017/02/file_example_XLSX_10.xlsx").then(da => {
-            expect(da.contentType).toEqual("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    it('checkUrl should return the Excel contentType and status 200 of url with xlsx-Extension', function () {
+        const data = checkURL("https://drive.google.com/u/0/uc?id=1YntZE_EXxJzGws9SzO0I00NHQrttitwi&export=download").then(da => {
+            expect(da.contentType).toEqual("application/vnd.ms-excel");
             expect(da.status).toEqual(200);
             expect(da.statusText).toEqual("OK");
         })
     });
-    it('checkUrl should return the Excel contentType and status 200 of url with ods-Extension', async () => {
-        const data = await checkURL("https://example-files.online-convert.com/spreadsheet/ods/example.ods").then(da => {
+    it('checkUrl should return the Excel contentType and status 200 of url with ods-Extension', function () {
+        const data =  checkURL("https://example-files.online-convert.com/spreadsheet/ods/example.ods").then(da => {
             expect(da.contentType).toEqual("application/vnd.oasis.opendocument.spreadsheet");
             expect(da.status).toEqual(200);
             expect(da.statusText).toEqual("OK");
